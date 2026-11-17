@@ -1,5 +1,13 @@
 # P4can-unlock-more
 
+> [!WARNING]
+> **32 MB flash only** (Waveshare ESP32-P4-WIFI6 / rev3.2).
+> The `app5M_fat24M_32MB` partition table does not fit a 16 MB board — flashing
+> this image on 16 MB **bricks it**, and you will need USB to recover.
+> For 16 MB you must build your own partition table, switch `FlashSize=32M` to
+> `16M` and pick a 16 MB `PartitionScheme` before compiling. No 16 MB config
+> ships with this repo.
+
 Tesla CAN toolkit firmware for the **Waveshare ESP32-P4 WiFi6 3×TWAI** board.
 Based on [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock)
 `v3.29.3`, with a new **More features** page and a firmware-update panel that
@@ -138,6 +146,27 @@ Built for **closed-course debugging**. Changing lighting, horn, nag suppression
 or driver-monitor behaviour on public roads may be illegal and may put the
 vehicle into a non-certified state. Use at your own risk; the authors accept no
 liability. Not affiliated with Tesla, Inc.
+
+## Support the project
+
+> Free and open source. If it saved you an evening of debugging, you can buy the
+> author a coffee.
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="Alipay QR"><br><sub><b>Alipay</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="WeChat Pay QR"><br><sub><b>WeChat Pay</b></sub></td>
+  </tr>
+</table>
+
+## Contact
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/sponsor/web_douyin.jpg" width="220" alt="Douyin QR"><br><sub><b>Douyin · @耶基大学懂事长</b><br>ID <code>yejiuni</code></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatauthor.jpg" width="220" alt="Author WeChat QR"><br><sub><b>WeChat · scan to add</b></sub></td>
+  </tr>
+</table>
 
 ## License
 

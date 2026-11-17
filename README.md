@@ -1,5 +1,10 @@
 # P4can-unlock-more
 
+> [!WARNING]
+> **只适用于 32 MB Flash 的板子**（微雪 ESP32-P4-WIFI6 / rev3.2）。
+> **16 MB 版本刷这个包会直接变砖** —— 分区表 `app5M_fat24M_32MB` 与 16 MB flash 不匹配，烧进去连 bootloader 都起不来，只能用 USB 重新救回来。
+> 16 MB 需要自己改 `large_fat_32MB.csv` 一类分区表、把 FQBN 里的 `FlashSize=32M` 换成 `16M`、`PartitionScheme` 换成 16 MB 方案，然后重新编译。仓库里没有现成的 16 MB 配置。
+
 给 **Waveshare ESP32-P4 WiFi6 3×TWAI** 板子的特斯拉 CAN 工具固件。
 在 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock) `v3.29.3` 的看板上，新增一页**「更多功能 / More features」**，并把固件更新面板补成能真正用的一次性流程。
 
@@ -214,6 +219,28 @@ sim/p4can-sim.html              本地模拟页（可直接打开）
 - [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock) —— 固件基线
 - [204442021](https://github.com/204442021) —— 功能清单与逆向素材
 - [P4can-universal-unlock 生态](https://github.com/06066060606060) 的其他贡献者
+
+## ☕ 赞助
+
+> 项目完全开源免费。如果它帮你省下了折腾的时间，欢迎请作者喝杯咖啡，助力后续更新~
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="支付宝收款码"><br><sub><b>支付宝</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="微信收款码"><br><sub><b>微信支付</b></sub></td>
+  </tr>
+</table>
+
+## 📮 联系作者
+
+> 装不上、刷完了没反应、想加功能，都可以来找我。
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/sponsor/web_douyin.jpg" width="220" alt="抖音二维码"><br><sub><b>抖音 · @耶基大学懂事长</b><br>抖音号 <code>yejiuni</code></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatauthor.jpg" width="220" alt="作者微信二维码"><br><sub><b>微信 · 扫码加好友</b></sub></td>
+  </tr>
+</table>
 
 ## License
 

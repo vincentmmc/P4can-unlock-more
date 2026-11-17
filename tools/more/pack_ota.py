@@ -112,7 +112,7 @@ def run(cmd, cwd=None, capture=True, tail=30):
 # ---------------------------------------------------------------- 1. 页面重建
 def rebuild_html():
     say("[1/7] 重建页面并注入 index_html.h")
-    for name in ("gen_feifan.py", "integrate_feifan.py", "patch_ota.py"):
+    for name in ("gen_feifan.py", "integrate_feifan.py", "patch_ota.py", "patch_zh.py"):
         script = HERE / name
         if not script.exists():
             say("      skip %s (不存在)" % name)

@@ -151,9 +151,11 @@ SUBTITLE = ('Merged from the TSL mini-program and the Albert firmware: %d contro
             'so switches stay on this phone.' % (total, n_groups))
 SUBTITLE_ZH = ('合并自 TSL 小程序与 Albert 固件：%d 组共 %d 个功能点，另加 5 键快捷条。'
                '控件已可用；固件端点尚未接入，开关暂存在本机。' % (n_groups, total))
+REPO_URL = 'https://github.com/baicyber/P4can-unlock-more'
 PAGE_TEXT = [
     ('More features', '更多功能'),
     (SUBTITLE, SUBTITLE_ZH),
+    ('Open source:', '开源项目地址：'),
     ('Firmware link', '固件连接'),
     ('Checking…', '检测中…'),
     ('Stored on this phone, firmware endpoint absent', '仅存本机，固件端点未接入'),
@@ -399,6 +401,8 @@ page = ['<!--P4CAN-FEIFAN-PAGE-START-->',
         '<main class="page ffScope" data-page="feifan">',
         '<div class="pageTitle">More features</div>',
         '<div class="pageSub">%s</div>' % E(SUBTITLE),
+        '<div class="ffSrc">Open source: <a href="%s" target="_blank" '
+        'rel="noopener noreferrer">%s</a></div>' % (REPO_URL, REPO_URL),
         '<div class="sectionhead tight"><div class="sectiontitle">One-tap actions</div>'
         '<div class="sectionnote">5 shortcuts</div></div>',
         '<section class="card"><div class="ffQuick">']
@@ -598,6 +602,8 @@ body .ffScope .settingChoiceButtons{grid-template-columns:repeat(auto-fit,minmax
 body .ffScope .settingChoiceButtons button{font-size:11px;min-height:38px;border:1px solid var(--line);border-radius:999px}
 body .ffScope .pageTitle{margin-bottom:2px}
 body .ffScope .pageSub{max-width:44ch}
+body .ffScope .ffSrc{margin-top:9px;font-size:11px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+body .ffScope .ffSrc a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
 @media(max-width:430px){body.p4-2027 .bottomnav .navbtn{min-width:0;padding:0 9px;font-size:11.5px}}
 /*P4CAN-FEIFAN-CSS-END*/
 """
