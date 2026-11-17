@@ -1,0 +1,35 @@
+# NOTICE / 归属说明
+
+## 固件基线
+
+`firmware/P4can-unlock-more/` 是基于下列上游项目改动的源码快照：
+
+- **P4can-universal-unlock** — https://github.com/06066060606060/P4can-universal-unlock
+  基线版本 `v3.29.3`。目录名、`FW_VERSION`、看板结构、CAN/TWAI 运行时、
+  Web API 等绝大部分代码来自上游，版权归原作者所有。
+- 上游源码包中未附 `LICENSE` 文件，因此本仓库不代为授予其使用条款；
+  如需商用或再分发固件主体，请先联系原作者取得许可。
+
+## 本仓库新增
+
+- `More features / 更多功能` 页面（`dashboard_source.html` 内的
+  `P4CAN-FEIFAN-*` 注入块）
+- 固件更新面板增强（`P4CAN-OTA-*` 注入块）
+- `tools/more/` 下的生成、注入、打包、模拟脚本
+- `data/feifan-menu-data.json` 功能/位域数据
+- `docs/`、`sim/`、`README`
+
+以上新增部分按根目录 `LICENSE`（MIT）授权。
+
+## 逆向分析的参考来源
+
+功能条目与帧/位域定义来自以下材料的静态分析，仓库中不包含任何原始二进制：
+
+1. TSL 安卓 App 内的 `SaaA_embed`（`__APP__.wxapkg` → `app-service.main.js`）
+   —— 44 个配置位域、`0xA3 / 0xA7 / 0xBB` 命令表（证据 A）
+2. `Albert-P4-P1.6.4-V3.2-*-OTA.bin` 内嵌的 gzip 看板页面
+   —— 元素 id 与功能命名（证据 A）
+3. P4CAN FUSION 界面设计图 —— 菜单结构与命名（证据 B，仅规格推断）
+
+商标归各自所有者。特斯拉（Tesla）、Model 3/Y、哨兵模式等名称仅用于
+说明兼容对象，本项目和所有上游项目与特斯拉公司无任何关联。

@@ -1,0 +1,4471 @@
+{
+ "meta": {
+  "name": "更多功能",
+  "baseline": "P4-CAN Universal v3.29.3 / Waveshare ESP32-P4 (rev3.2, 32MB, 3xTWAI) + Albert-P4-P1.6.4 固件内嵌页面",
+  "source": "TSL-Android.apk.1 -> assets/SaaA_embed (__APP__.wxapkg) -> app-service.main.js；Albert-P4-P1.6.4-V3.2-c565dc82-OTA.bin -> 内嵌 dashboard (gzip)；P4CAN FUSION 设计图（证据 B）",
+  "note": "静态逆向，仅行为规格；未改固件源码、未编译、未刷写"
+ },
+ "frame": {
+  "format": "55 7F CMD LEN_H LEN_L [payload] SUM",
+  "sum": "SUM = (CMD + LEN_H + LEN_L + Σpayload) & 0xFF",
+  "transport": "BLE Service 0000FFF0-0000-1000-8000-00805F9B34FB / Char 0000FFF1, MTU 23, 20B chunk, 串行写队列",
+  "config": "configBytes ≥35 字节（设备信息包最长 178 字节）；读 = byte[offset] >>> shift & mask；写 = 清位后置值，整体用 CMD 163 回写；同步回包 160/161/163"
+ },
+ "commands": [
+  [
+   "0xA0",
+   "160",
+   "设备信息 / 连接鉴权（连回两次完成）",
+   "A"
+  ],
+  [
+   "0xA1",
+   "161",
+   "设备信息扩展回包",
+   "A"
+  ],
+  [
+   "0xA3",
+   "163",
+   "写入整块配置（writeConfigBytes）",
+   "A"
+  ],
+  [
+   "0xA4",
+   "164",
+   "恢复默认（payload = UID）",
+   "A"
+  ],
+  [
+   "0xA5",
+   "165",
+   "高级功能 / 实验参数",
+   "A"
+  ],
+  [
+   "0xA7",
+   "167",
+   "车身动作：1 字节动作码",
+   "A"
+  ],
+  [
+   "0xA8",
+   "168",
+   "4 位 ASCII 蓝牙密码（默认 1234）",
+   "A"
+  ],
+  [
+   "0xAB",
+   "171",
+   "快捷指令 / 场景 256 字节配置块",
+   "A"
+  ],
+  [
+   "0xAD",
+   "173",
+   "反激活（payload = UID）",
+   "A"
+  ],
+  [
+   "0xAF",
+   "175",
+   "激活（payload = uidToKey 16bit）",
+   "A"
+  ],
+  [
+   "0xB0",
+   "176",
+   "仪表 / 车身状态帧（doorList, frunk, trunk, 电压电流温度 SOC）",
+   "A"
+  ],
+  [
+   "0xB9",
+   "185",
+   "氛围灯",
+   "A"
+  ],
+  [
+   "0xBA",
+   "186",
+   "蓝牙按钮配置回包",
+   "A"
+  ],
+  [
+   "0xBB",
+   "187",
+   "滚轮按键 / 首页快捷动作（1 字节 value）",
+   "A"
+  ],
+  [
+   "0xC0",
+   "192",
+   "CAN 调试监听",
+   "A"
+  ],
+  [
+   "0xD0",
+   "208",
+   "电池概览",
+   "A"
+  ],
+  [
+   "0xF0",
+   "240",
+   "BLE 主机配对",
+   "A"
+  ]
+ ],
+ "fields": [
+  [
+   "mianSwitch",
+   "模块总开关",
+   "28>>3&1",
+   "开 / 关"
+  ],
+  [
+   "apAutoOpenType",
+   "AP 恢复方式",
+   "28>>1&3",
+   "0 关闭 / 1 双击右滚轮 / 2 下拉档杆 / 3 跟随 AP"
+  ],
+  [
+   "apAutoOpenTime",
+   "AP 恢复延时",
+   "30>>1&7",
+   "0..7 秒"
+  ],
+  [
+   "oneClickOpenAP",
+   "一键 AP",
+   "31>>3&1",
+   "开 / 关"
+  ],
+  [
+   "fsd",
+   "EAP 辅助 / 增强",
+   "28>>5&1",
+   "开 / 关"
+  ],
+  [
+   "OffAPAutoWiper",
+   "关闭自动雨刮",
+   "25>>7&1",
+   "开 / 关"
+  ],
+  [
+   "ModeMDR",
+   "免打扰方式",
+   "29>>0&3",
+   "0 滚轮 / 1 无感 / 2 滚轮+无感"
+  ],
+  [
+   "automdr",
+   "AP 自动免打扰",
+   "28>>4&1",
+   "0 关闭 / 1 跟随 AP"
+  ],
+  [
+   "time",
+   "滚轮操作时间",
+   "27>>0&15",
+   "1..8 时间档 / 15 定点免打扰"
+  ],
+  [
+   "rand",
+   "滚轮随机时间",
+   "28>>0&1",
+   "开 / 关"
+  ],
+  [
+   "lr",
+   "模块自动操作滚轮",
+   "28>>6&3",
+   "0 左 / 1 右 / 2 交替 / 3 随机"
+  ],
+  [
+   "jg",
+   "加减时间间隔",
+   "32>>0&15",
+   "1..10 = 0.1..1.0 秒"
+  ],
+  [
+   "jj",
+   "自动加减类型",
+   "33>>0&3",
+   "0 先加后减 / 1 先减后加 / 2 交替 / 3 随机"
+  ],
+  [
+   "apHighBeam",
+   "手动远光",
+   "31>>4&3",
+   "0 关闭 / 1 老款 / 2 焕新版"
+  ],
+  [
+   "apOverspeedExit",
+   "AP 超速退出",
+   "34>>0&1",
+   "开 / 关"
+  ],
+  [
+   "airAutoArid",
+   "空调烘干",
+   "33>>4&3",
+   "0 关闭 / 1 1分钟 / 2 5分钟 / 3 10分钟"
+  ],
+  [
+   "frontRightEasyAccess",
+   "副驾便利进出",
+   "25>>3&3",
+   "0 关闭 / 1 安全带解系时 / 2 车门开关时"
+  ],
+  [
+   "dynamicBrakeLight",
+   "动态刹车灯",
+   "33>>6&3",
+   "0 关闭 / 1 轻踩 / 2 深踩"
+  ],
+  [
+   "pluseHighBeam",
+   "远光爆闪速度",
+   "25>>0&3",
+   "0 关闭 / 1 快 / 2 中 / 3 慢"
+  ],
+  [
+   "pluseRearFogLight",
+   "后雾灯爆闪",
+   "31>>6&1",
+   "开 / 关"
+  ],
+  [
+   "pluseHorn",
+   "脉冲喇叭速度",
+   "27>>6&3",
+   "0 关闭 / 1 快 / 2 中 / 3 慢"
+  ],
+  [
+   "KERS",
+   "能量回收制动",
+   "24>>5&7",
+   "0 车机 / 1..5 = 0..100%"
+  ],
+  [
+   "stoppingMode",
+   "停止模式",
+   "25>>5&3",
+   "0 车机 / 1 保持 / 2 缓行 / 3 转动"
+  ],
+  [
+   "autoParkBrake",
+   "自动强驻车",
+   "24>>4&1",
+   "开 / 关"
+  ],
+  [
+   "TimeOpenFrontBox",
+   "门把手开前备箱",
+   "29>>2&7",
+   "0..7 秒长拉"
+  ],
+  [
+   "TimeOpenChargeDoor",
+   "门把手开充电口",
+   "29>>5&7",
+   "0..7 秒长拉"
+  ],
+  [
+   "beep",
+   "提示音音量",
+   "26>>0&255",
+   "0..100%"
+  ],
+  [
+   "led",
+   "LED 灯开关",
+   "27>>4&1",
+   "开 / 关"
+  ],
+  [
+   "frontLeftBuckle",
+   "主驾安全带提醒",
+   "34>>1&1",
+   "0 开启 / 1 关闭提醒"
+  ],
+  [
+   "frontRightBuckle",
+   "副驾安全带提醒",
+   "34>>2&1",
+   "0 开启 / 1 关闭提醒"
+  ],
+  [
+   "rearBuckle",
+   "后排安全带提醒",
+   "34>>3&1",
+   "0 开启 / 1 关闭提醒"
+  ],
+  [
+   "steerAssistanceLighting",
+   "转向辅助照明",
+   "31>>7&1",
+   "开 / 关"
+  ]
+ ],
+ "apis": [
+  [
+   "GET",
+   "/api/feifan/config",
+   "读取整块设置（id -> value），首次进入页面时拉取"
+  ],
+  [
+   "POST",
+   "/api/feifan/config",
+   "{id, value} 或 {configBytes:[...]}；服务端按位域清位写回并持久化 NVS"
+  ],
+  [
+   "POST",
+   "/api/feifan/action",
+   "{code} 车身动作 / {wheel,direction} 滚轮按键 / {quick} 首页快捷"
+  ],
+  [
+   "GET",
+   "/api/feifan/gauge",
+   "仪表实时数据：总压、电流、温度、SOC、剩余里程、总里程、门盖状态"
+  ],
+  [
+   "GET",
+   "/api/feifan/status",
+   "连接状态、固件版本、profile、可用能力（证据等级对应的功能开关）"
+  ]
+ ],
+ "steps": [
+  "把本页 <section class=\"page\" data-page=\"feifan\"> 结构粘进 dashboard_source.html（保留现有 CSS 变量与 .card/.listrow 样式）。",
+  "底部导航 .bottomnav 增加「非凡功能」按钮（data-page-target=\"feifan\"），并按现有 devicesHidden/labHidden 规则调整 grid 列数。",
+  "前端 switchPage / data-page 白名单加入 feifan；语言切换复用中文语言版已有的 lang 机制，本页 data-cn/data-en 已备好。",
+  "web_api.h 增加上表 5 个端点；配置读写建议直接复用一个 35+ 字节 configBytes 缓冲区 + 位域读写函数。",
+  "feature_config_migration_pure.h 增加默认值与 NVS 迁移；p4can_core_state.h 增加运行时状态与互斥保护。",
+  "can_runtime.h / vehicle_logic.h 挂接：动作码 -> CAN 帧发送、滚轮周期调度（buildCycle/resolveDelayMs 同构实现）、0xB0 仪表帧解析。",
+  "重新生成 index_html.h（HTML -> gzip -> C 数组）；build_opt.h / pin_config.h 保持不动。",
+  "本地确认前后端契约后再用 arduino-cli 编译；编译参数见下方「编译与刷写」，32MB 整片写入 0x0。",
+  "台架三路纯 RX 验证总线与 DLC，再允许 TX；封闭场地逐项验收，最后才考虑上车。"
+ ],
+ "build": "esp32:esp32:esp32p4:ChipVariant=postv3,FlashSize=32M,PartitionScheme=app5M_fat24M_32MB,PSRAM=enabled,USBMode=hwcdc,CDCOnBoot=cdc,FlashMode=qio",
+ "flash": "esptool -c esp32p4 -p COM13 -b 921600 write-flash 0x0 <32MB-fullflash.bin>  （失败自动降 460800 / 115200）",
+ "groups": [
+  {
+   "id": "drv",
+   "name": "驾驶辅助",
+   "en": "Drive assist",
+   "note": "Nag Killer、打灯变道、自动换挡、速度与传动",
+   "sections": [
+    {
+     "id": "d1",
+     "name": "智驾核心",
+     "en": "ADAS core",
+     "items": [
+      {
+       "id": "d1a",
+       "n": "Nag Killer 抑制",
+       "en": "Nag Killer suppression",
+       "d": "扭矩回显 0x370，Nag Burst 按需脉冲；纠正扭矩、帧数、暂停时长可调，今日已消次数回显",
+       "t": "sw",
+       "lv": "A",
+       "p4": "已有",
+       "im": "P4-CAN 已内置 Nag Killer（web_api.h 里 Nag 相关实现 122 处，状态页已有实时计数），本页只做开关与参数映射，不重复实现。设计图标的「Flipper 算法」在这里落到 P4 现有 nag 配置。",
+       "src": "web_api.h:1461 / vehicle_logic.h",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d1b",
+       "n": "打灯变道",
+       "en": "Turn-signal lane change",
+       "d": "打灯触发变道；CHASSIS 读 0x399 DAS 状态作为 AP 激活门。须已有 EAP/FSD 订阅",
+       "t": "sw",
+       "lv": "A",
+       "p4": "已有",
+       "im": "P4 已有 0x293 注入（vehicle_logic.h LAB 段 7 处），设计图标注的「P4can 0x293 LAB」即此项。无订阅时不发帧，开关保持灰态。原 a2c「开启自动变道」与它是同一个功能，已合并到此处。",
+       "src": "vehicle_logic.h:0x293",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d1c",
+       "n": "加速模式",
+       "en": "Acceleration profile",
+       "d": "舒适 / 标准 / 运动三挡，写 0x334 踏板映射",
+       "t": "seg",
+       "lv": "A",
+       "p4": "已有",
+       "im": "P4 的 AP Drive Profile 已独占 0x334 出口（web_api.h:3239），与 LAB PedalMap 共用 UI_powertrainControl 覆盖层，本项做映射即可。注意 Party+Chassis 拓扑没有 0x334 通路。",
+       "src": "vehicle_logic.h:1561",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "comfort",
+         "l": "舒适"
+        },
+        {
+         "v": "standard",
+         "l": "标准"
+        },
+        {
+         "v": "sport",
+         "l": "运动"
+        }
+       ]
+      },
+      {
+       "id": "d1d",
+       "n": "赛道模式",
+       "en": "Track mode",
+       "d": "操控平衡偏后驱、稳定性辅助强度、赛后冷却。非性能版可用，改帧重发会自动重算校验",
+       "t": "seg",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图标注「Flipper 0x313，操控平衡 100 / 稳定性辅助 30% / 赛后冷却关」。0x313 在 Albert 固件与 TSL 小程序里都搜不到，属未验证规格；落地前必须先在台架确认该帧在本车拓扑上真实存在。真正能落地的运动化入口是 d4 自动运动模式，那个是实锤位域。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "off",
+         "l": "关闭"
+        },
+        {
+         "v": "street",
+         "l": "街道"
+        },
+        {
+         "v": "track",
+         "l": "赛道"
+        }
+       ]
+      },
+      {
+       "id": "d1e",
+       "n": "TLSSC 限速跟随",
+       "en": "TLSSC speed follow",
+       "d": "0x331 恢复在 2026.14+ 车机固件下已失效，开关仅保留代码与状态显示",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图标注「已堵 · 2026.14+ 封」。TSL 侧 0x331 注入被车机加了校验，恢复后无效。本项如实标为不可用，不做「能开」的假承诺。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d1f",
+       "n": "AP-First 注入顺序",
+       "en": "AP-First injection order",
+       "d": "任何注入之前先确认 AP 已接管，否则整包不发；Abort Guard 在 DAS 进入 ABORTING 时立即停发",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图底栏的三层安全：AP-First（AP 接管后才允许注入）、Abort Guard（DAS 进入 ABORTING 立即停发）、OTA 检测（升级中全停）。任一层不过就不发帧并记入诊断日志。P4 侧可复用现有 AP gate 状态机。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    },
+    {
+     "id": "d2",
+     "name": "自动换挡",
+     "en": "Auto shift",
+     "items": [
+      {
+       "id": "d2a",
+       "n": "启用自动换挡",
+       "en": "Auto shift",
+       "d": "支持滚轮、刹车＋方向盘、障碍物三种换挡入口，默认关闭",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "Albert 固件 gearAutomationEnabled，默认关闭。原文：「支持滚轮、刹车方向盘和障碍物换挡」。设计图里的「滚轮挂挡 Albert 0x229」是本功能的四方向输入之一，不是独立功能，已合并到此处。",
+       "src": "Albert dashboard #gearAutomationEnabled",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d2b",
+       "n": "换挡前必须系安全带",
+       "en": "Seatbelt gate",
+       "d": "读原车 0x145 刹车与 PARTY 0x30A 主驾安全带，两者都要连续 2 帧确认；进 P 挡不受此门限制",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearSeatbeltSafetyEnabled，出厂默认勾选。「驾驶位有人与安全带模拟」不会绕过本机读取的真实安全带状态，这是原版明确写的。",
+       "src": "Albert dashboard #gearSeatbeltSafetyEnabled",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d2c",
+       "n": "换挡次数（单次刹车周期）",
+       "en": "Shifts per brake cycle",
+       "d": "0 表示不限；每次进入速度范围重新计数",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearShiftLimit，原版范围 0-255，默认 0。开启「关闭刹车安全门」后本项一并失效。",
+       "src": "Albert dashboard #gearShiftLimit",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "不限"
+        },
+        {
+         "v": "3",
+         "l": "3 次"
+        },
+        {
+         "v": "6",
+         "l": "6 次"
+        },
+        {
+         "v": "10",
+         "l": "10 次"
+        }
+       ]
+      },
+      {
+       "id": "d2d",
+       "n": "允许换挡速度上限",
+       "en": "Shift speed gate",
+       "d": "按真实速度整数部分判断，0 表示低于 1 km/h；连续 2 帧满足才开放",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearAutoShiftMaxSpeedKph，原版 0-8。连续两帧判定是为了避免边界抖动卡住体验。",
+       "src": "Albert dashboard #gearAutoShiftMaxSpeedKph",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "< 1 km/h"
+        },
+        {
+         "v": "1",
+         "l": "< 2 km/h"
+        },
+        {
+         "v": "2",
+         "l": "< 3 km/h"
+        },
+        {
+         "v": "3",
+         "l": "< 4 km/h"
+        }
+       ]
+      },
+      {
+       "id": "d2e",
+       "n": "动作冷却",
+       "en": "Shift cooldown",
+       "d": "两次换挡之间的最小间隔",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearCooldownMs，原版 100-5000，步进 50。",
+       "src": "Albert dashboard #gearCooldownMs",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "100",
+         "l": "100 ms"
+        },
+        {
+         "v": "300",
+         "l": "300 ms"
+        },
+        {
+         "v": "500",
+         "l": "500 ms"
+        },
+        {
+         "v": "1000",
+         "l": "1000 ms"
+        }
+       ]
+      },
+      {
+       "id": "d2f",
+       "n": "刹车＋方向盘确认",
+       "en": "Brake + steering confirm",
+       "d": "P 挡左转进 D、右转进 R；D/R 挡向任意方向超过阈值即互换",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearBrakeToggleEnabled。速度门满足且刹车按下时取当前方向盘角度为基线；掉出再进入会重新取基线，取基线时角度无效则继续等待。方向按相对基线的瞬时角度判断，不做左右累计。",
+       "src": "Albert dashboard #gearBrakeToggleEnabled",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d2g",
+       "n": "D/R 挡转向阈值",
+       "en": "Steering threshold",
+       "d": "方向盘相对基线转动多少度触发互换",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearDriveReverseSteeringThresholdDeciDeg，原版 1-360，默认 120。",
+       "src": "Albert dashboard #gearDriveReverseSteeringThresholdDeciDeg",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "60",
+         "l": "60°"
+        },
+        {
+         "v": "90",
+         "l": "90°"
+        },
+        {
+         "v": "120",
+         "l": "120°"
+        },
+        {
+         "v": "180",
+         "l": "180°"
+        }
+       ]
+      },
+      {
+       "id": "d2h",
+       "n": "障碍物换挡",
+       "en": "Obstacle shift",
+       "d": "读 PARTY 2/3 路 0x255 挡位建议与 0x12B 扭矩方向，只在 P 挡处理",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "进 D/R 或挡位过期会清空数据；回到 P 后必须重新收到两帧新数据。方向盘角度确认开启时，D 建议要求左转、R 建议要求右转。",
+       "src": "Albert dashboard #gearObstacleNested",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d2i",
+       "n": "滚轮换挡方向映射",
+       "en": "Wheel shift mapping",
+       "d": "原版四个方向默认均为无动作，需逐项指定",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "设计图的「滚轮挂挡 Albert 0x229」即这里的输入源。P4 侧用 0xBB 模拟滚轮键值注入（左滚轮 140-144 / 右滚轮 146-149），与 TSL 侧键值表一致。",
+       "src": "Albert dashboard + TSL 0xBB 键值表",
+       "api": "POST /api/feifan/action",
+       "o": [
+        {
+         "v": "none",
+         "l": "无动作"
+        },
+        {
+         "v": "ud",
+         "l": "上下"
+        },
+        {
+         "v": "lr",
+         "l": "左右"
+        },
+        {
+         "v": "all",
+         "l": "四向"
+        }
+       ]
+      },
+      {
+       "id": "d2j",
+       "n": "智能流畅预设",
+       "en": "Smooth preset",
+       "d": "一键写入 1000 ms · P 30° · D/R 60° · 障碍物 30°",
+       "t": "grid",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "gearSmoothPreset 一次性写完四项，省得逐个调。默认值是原版的保守组合。",
+       "src": "Albert dashboard #gearSmoothPreset",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "smooth",
+         "l": "应用预设"
+        },
+        {
+         "v": "default",
+         "l": "恢复默认"
+        }
+       ]
+      },
+      {
+       "id": "d2k",
+       "n": "换挡闭环反馈",
+       "en": "Shift closed loop",
+       "d": "复用原车真实帧发送路径，读 0x118 确认；失败不重发",
+       "t": "info",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "原版明确「继续复用真实原帧发送路径和 0x118 反馈确认」。P4 侧 0x118 已有 6 处实现，可直接接。",
+       "src": "Albert dashboard + vehicle_logic.h:0x118",
+       "api": "GET /api/feifan/status"
+      }
+     ]
+    },
+    {
+     "id": "d3",
+     "name": "速度补偿",
+     "en": "Speed offset",
+     "items": [
+      {
+       "id": "d3a",
+       "n": "速度补偿模板",
+       "en": "Speed offset template",
+       "d": "舒适 / 标准 / 迅捷三套目标速度，另可开 V14 独立模板",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "Albert 有「舒适目标速度 / 标准目标速度 / 迅捷目标速度」三组数值，另加「V14 独立速度模板」与「日常预防扭矩（H0/H1、H2 等待期）」。本项只做模板选择，数值在固件侧落。",
+       "src": "Albert dashboard 驾驶员设置 / FSD 速度补偿",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "comfort",
+         "l": "舒适"
+        },
+        {
+         "v": "standard",
+         "l": "标准"
+        },
+        {
+         "v": "quick",
+         "l": "迅捷"
+        }
+       ]
+      },
+      {
+       "id": "d3b",
+       "n": "V14 独立速度模板",
+       "en": "V14 separate template",
+       "d": "老版车机与 V14 用不同模板，避免互相覆盖",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "原版按车机版本分流：V12 目标模板、V13 低速后台/高速车机、V14 独立模板。",
+       "src": "Albert dashboard FSD 速度补偿",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "d3c",
+       "n": "预防扭矩与纠正",
+       "en": "Preventive torque",
+       "d": "日常预防扭矩 H0/H1、H2 等待期；升级纠正 H2 超时与 H3-H5 帧数",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "对应 Nag Killer 的扭矩模型。P4 侧 nag 参数已存在，这里给三档预设，避免用户直接填 Nm。",
+       "src": "Albert dashboard Nag Killer 段",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "gentle",
+         "l": "温和"
+        },
+        {
+         "v": "normal",
+         "l": "标准"
+        },
+        {
+         "v": "strong",
+         "l": "加强"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "d4",
+     "name": "传动与制动",
+     "en": "Drivetrain",
+     "items": [
+      {
+       "id": "d4a",
+       "n": "自动运动模式",
+       "en": "Auto sport mode",
+       "d": "按驾驶风格自动切运动化响应，三比特共 8 档",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 autoSportMode，byte24 >>> 0 & 7。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。这是设计图「赛道模式」真正能落地的那一层：TSL 原生就有这个位域，不用去猜 0x313。",
+       "src": "TSL SETTINGS 位域 autoSportMode",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "运动"
+        },
+        {
+         "v": "2",
+         "l": "赛道"
+        },
+        {
+         "v": "3",
+         "l": "自定义"
+        }
+       ]
+      },
+      {
+       "id": "d4b",
+       "n": "能量回收制动",
+       "en": "Regen braking",
+       "d": "回收强度，与原车停止模式配合决定松电门后的减速感",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 KERS，byte24 >>> 5 & 7。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。三比特可取值 0-7，原版 UI 只暴露常用三档。",
+       "src": "TSL SETTINGS 位域 KERS",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "标准"
+        },
+        {
+         "v": "1",
+         "l": "低"
+        },
+        {
+         "v": "2",
+         "l": "高"
+        }
+       ]
+      },
+      {
+       "id": "d4c",
+       "n": "停止模式",
+       "en": "Stopping mode",
+       "d": "缓行 / 保持 / 转动，决定刹停后车辆行为",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 stoppingMode，byte25 >>> 5 & 3。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 stoppingMode",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "缓行"
+        },
+        {
+         "v": "1",
+         "l": "保持"
+        },
+        {
+         "v": "2",
+         "l": "转动"
+        }
+       ]
+      },
+      {
+       "id": "d4d",
+       "n": "自动强驻车",
+       "en": "Auto park brake",
+       "d": "离车自动上电子手刹",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 autoParkBrake，byte24 >>> 4 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 autoParkBrake",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lamp",
+   "name": "灯光与喇叭",
+   "en": "Lights & horn",
+   "note": "远光爆闪、脉冲喇叭、雾灯警示与氛围灯",
+   "sections": [
+    {
+     "id": "l1",
+     "name": "大灯与爆闪",
+     "en": "Headlight & strobe",
+     "items": [
+      {
+       "id": "l1a",
+       "n": "远光爆闪",
+       "en": "High beam strobe",
+       "d": "交替闪远光，档位决定脉冲速度",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 pluseHighBeam，byte25 >>> 0 & 3。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。设计图把它写成「P4can 0x249」，但 0x249 是 SCCM 拨杆状态帧、只能读不能写；真正让灯闪的是这个位域，原版就是写配置块，不是发 0x249。",
+       "src": "TSL SETTINGS 位域 pluseHighBeam",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "慢"
+        },
+        {
+         "v": "2",
+         "l": "中"
+        },
+        {
+         "v": "3",
+         "l": "快"
+        }
+       ]
+      },
+      {
+       "id": "l1b",
+       "n": "近光跟随远光爆闪",
+       "en": "Low beam follows strobe",
+       "d": "爆闪时近光同步亮灭，避免只剩远光孤零零闪",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 pluseHighBeamAndLowBeam，byte25 >>> 2 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 pluseHighBeamAndLowBeam",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l1c",
+       "n": "远光闪 3 次",
+       "en": "Triple flash",
+       "d": "拉杆触发固定三下远光，超车示意用",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 blinkHighBeam，byte30 >>> 6 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。与 l1a 的区别：这一项是固定三次、不需要持续按住。",
+       "src": "TSL SETTINGS 位域 blinkHighBeam",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l1d",
+       "n": "远近光交替爆闪",
+       "en": "High/low alternating strobe",
+       "d": "走 DAS_bodyControls 高低 beam 决策位，200 ms 交替。不是 0x249 拨杆帧，不会把灯管成近光",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图标注「0x3E9 DAS」。这点确实关键：拿 0x249 拨杆帧做爆闪，灯光模块会判定为持续拨杆进而切近光；走 DAS 决策位才能真的闪远光。但 0x3E9 在 Albert 固件里不存在，Albert 的远光走 0x3C2 Mux1（见下两项）。想要现成可用的，直接用 l1a 位域。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "l1e",
+       "n": "强制远光锁存",
+       "en": "Forced high beam latch",
+       "d": "单次长按 1.5 秒，松开后确认锁存；控制帧 VEH 0x3C2 Mux1",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "Albert fsdForceHighPhysicalEnabled。P4 里 0x3C2 是 VCLEFT 开关帧（无杆转向灯也走它），做灯光控制必须先锁定 Mux 号，否则会和转向灯打架。",
+       "src": "Albert dashboard #fsdForceHighPhysicalEnabled",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "l1f",
+       "n": "第二次长按 0.5 秒爆闪",
+       "en": "Second long-press strobe",
+       "d": "短按一次，第二次长按 0.5 秒；按住持续爆闪，松开立即停止",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "Albert longPressHighBeamStrobeEnabled。手势状态机分短按 / 长按 / 锁存三态，松开必须立即停，不能有尾帧残留。",
+       "src": "Albert dashboard #longPressHighBeamStrobeEnabled",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "l1g",
+       "n": "爆闪间隔",
+       "en": "Strobe interval",
+       "d": "两次远光切换之间的间隔，1-100 ms",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "highBeamStrobeIntervalMs。间隔太小会被前车当成挑衅，20 ms 已经很明显。",
+       "src": "Albert dashboard #highBeamStrobeIntervalMs",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "20",
+         "l": "20 ms"
+        },
+        {
+         "v": "50",
+         "l": "50 ms"
+        },
+        {
+         "v": "80",
+         "l": "80 ms"
+        },
+        {
+         "v": "100",
+         "l": "100 ms"
+        }
+       ]
+      },
+      {
+       "id": "l1h",
+       "n": "双拉固定闪次数",
+       "en": "Double-pull flash count",
+       "d": "连续两次拉杆触发固定次数闪烁",
+       "t": "seg",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图原文「双拉触发固定闪 2/3/5/7 次可选」。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "2",
+         "l": "闪 2 次"
+        },
+        {
+         "v": "3",
+         "l": "闪 3 次"
+        },
+        {
+         "v": "5",
+         "l": "闪 5 次"
+        },
+        {
+         "v": "7",
+         "l": "闪 7 次"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "l2",
+     "name": "喇叭",
+     "en": "Horn",
+     "items": [
+      {
+       "id": "l2a",
+       "n": "脉冲喇叭",
+       "en": "Pulse horn",
+       "d": "按固定节奏断鸣，档位决定脉冲速度",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 pluseHorn，byte27 >>> 6 & 3。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。设计图把它写成「0x10C」，但 0x10C 在 Albert 固件和 P4 源码里都不存在，写这个帧不会有任何东西响应。原版实际动作是写这个位域。",
+       "src": "TSL SETTINGS 位域 pluseHorn",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "慢"
+        },
+        {
+         "v": "2",
+         "l": "中"
+        },
+        {
+         "v": "3",
+         "l": "快"
+        }
+       ]
+      },
+      {
+       "id": "l2b",
+       "n": "长按喇叭开启脉冲",
+       "en": "Long-press enables pulse",
+       "d": "长按喇叭时按 l2a 的节奏断鸣，松手恢复常鸣",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 longPluseHorn，byte27 >>> 5 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 longPluseHorn",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l2c",
+       "n": "低速轻鸣笛",
+       "en": "Gentle horn at low speed",
+       "d": "低速时按一下只轻鸣，不吓人",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 gentryHorn，byte34 >>> 4 & 3。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 gentryHorn",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "1 声"
+        },
+        {
+         "v": "2",
+         "l": "2 声"
+        },
+        {
+         "v": "3",
+         "l": "3 声"
+        }
+       ]
+      },
+      {
+       "id": "l2d",
+       "n": "轻鸣笛次数",
+       "en": "Gentle horn count",
+       "d": "轻鸣笛响几下",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 gentryHornCount，byte34 >>> 6 & 3。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 gentryHornCount",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "1",
+         "l": "1 声"
+        },
+        {
+         "v": "2",
+         "l": "2 声"
+        },
+        {
+         "v": "3",
+         "l": "3 声"
+        }
+       ]
+      },
+      {
+       "id": "l2e",
+       "n": "喇叭联动远光",
+       "en": "Horn triggers high beam",
+       "d": "按喇叭时同步闪远光提醒前车",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 hornLinkedHighBeam，byte32 >>> 5 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。城市道路慎用：按喇叭已经够吵，再闪远光容易激化矛盾。",
+       "src": "TSL SETTINGS 位域 hornLinkedHighBeam",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l2f",
+       "n": "远光联动喇叭",
+       "en": "High beam triggers horn",
+       "d": "闪远光时同步短鸣",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 highBeamLinkedHorn，byte32 >>> 6 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 highBeamLinkedHorn",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l2g",
+       "n": "脉冲喇叭间隔",
+       "en": "Horn pulse gap",
+       "d": "两声之间的静音时长",
+       "t": "seg",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "与 l2a 配合。城市禁鸣区域不要开脉冲喇叭，属于违法行为，仅台架验证用。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "150",
+         "l": "150 ms"
+        },
+        {
+         "v": "200",
+         "l": "200 ms"
+        },
+        {
+         "v": "300",
+         "l": "300 ms"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "l3",
+     "name": "雾灯与警示",
+     "en": "Fog & hazard",
+     "items": [
+      {
+       "id": "l3a",
+       "n": "前雾灯爆闪",
+       "en": "Front fog strobe",
+       "d": "前雾灯参与爆闪，雨雾天辨识度更高",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 pluseFrontFogLight，byte30 >>> 5 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 pluseFrontFogLight",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3b",
+       "n": "后雾灯爆闪",
+       "en": "Rear fog strobe",
+       "d": "后雾灯按节奏闪，用来提醒后车",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 pluseRearFogLight，byte31 >>> 6 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 pluseRearFogLight",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3c",
+       "n": "动态刹车灯",
+       "en": "Dynamic brake light",
+       "d": "刹车灯按减速度分档闪烁。设计图叫「刹车灯爆闪」，实际就是这一项",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 dynamicBrakeLight，byte33 >>> 6 & 3。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。关键差别：设计图写「亮起超过 1000 ms 才开始爆闪」，原版是按减速度分档。按时间触发会在等红灯时乱闪，按减速度触发只在真急刹时闪，后者才合理。",
+       "src": "TSL SETTINGS 位域 dynamicBrakeLight",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "轻"
+        },
+        {
+         "v": "2",
+         "l": "中"
+        },
+        {
+         "v": "3",
+         "l": "重"
+        }
+       ]
+      },
+      {
+       "id": "l3d",
+       "n": "开门双闪",
+       "en": "Hazard on door open",
+       "d": "开门时自动双闪，夜间路边下车更安全",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 openDoorHazardLight，byte30 >>> 4 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 openDoorHazardLight",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3e",
+       "n": "倒车双闪",
+       "en": "Hazard on reverse",
+       "d": "挂倒挡时双闪",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 backHazardLight，byte30 >>> 7 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 backHazardLight",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3f",
+       "n": "倒车后雾灯照明",
+       "en": "Rear fog as reverse light",
+       "d": "倒车时点亮后雾灯补光",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 backHazardRearFogLight，byte24 >>> 3 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 backHazardRearFogLight",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3g",
+       "n": "转向辅助照明",
+       "en": "Cornering light",
+       "d": "打方向时对应侧雾灯补光",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 steerAssistanceLighting，byte31 >>> 7 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 steerAssistanceLighting",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3h",
+       "n": "后雾灯领航模式",
+       "en": "Rear fog pilot mode",
+       "d": "实时控制 + 脉冲 + 安全锁存。四项权限默认关闭",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "Albert 后雾灯段，帧 0x3E3。锁存意味着触发后必须显式解除，不会自己恢复，避免高速上突然熄灭。TSL 侧对应的就是 l3b 位域，两者选一实现。",
+       "src": "Albert dashboard 后雾灯",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "l3i",
+       "n": "后雾灯触发阈值",
+       "en": "Rear fog threshold",
+       "d": "减速度达到多少才算重度，100-500",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "rear-fog-hard-threshold，默认 250。",
+       "src": "Albert dashboard #rear-fog-hard-threshold",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "150",
+         "l": "150"
+        },
+        {
+         "v": "250",
+         "l": "250"
+        },
+        {
+         "v": "400",
+         "l": "400"
+        }
+       ]
+      },
+      {
+       "id": "l3j",
+       "n": "自动减速后雾灯",
+       "en": "Decel rear fog",
+       "d": "轻度减速闪 3 次、重度减速闪 6 次",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "rear-fog-strobe-tgl。档位按减速度分轻度/重度，次数写死，不可调。",
+       "src": "Albert dashboard #rear-fog-strobe-tgl",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l3k",
+       "n": "倒车警示（双闪 + 8 次后雾灯）",
+       "en": "Reverse warning",
+       "d": "挂倒挡时联动双闪，并执行 8 次后雾灯脉冲",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "与自动减速共用同一套脉冲引擎，只是固定 8 次。",
+       "src": "Albert dashboard 后雾灯",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    },
+    {
+     "id": "l4",
+     "name": "氛围灯与迎宾",
+     "en": "Ambient & welcome",
+     "items": [
+      {
+       "id": "l4a",
+       "n": "常亮氛围灯",
+       "en": "Always-on ambient",
+       "d": "总开关；关闭后仍保留分区设置，迎宾、转向、安全提示各自独立",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "Albert ambientEnabled。设计图里的「氛围灯 Albert 0x679」就是这一项；0x679 在固件页面里没出现（属通信层 ID），UI 上按分区配置走。",
+       "src": "Albert dashboard #ambientEnabled",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l4b",
+       "n": "分区选择",
+       "en": "Zone selection",
+       "d": "六个独立分区，每区独立开关与亮度，默认 60%",
+       "t": "grid",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "data-ambient-zone-select 0-5，仪表台左右为 4/5，四门为 0-3。点一次切换该区开关。",
+       "src": "Albert dashboard 车厢氛围灯区域图",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "z4",
+         "l": "仪表台左"
+        },
+        {
+         "v": "z5",
+         "l": "仪表台右"
+        },
+        {
+         "v": "z0",
+         "l": "左前门"
+        },
+        {
+         "v": "z1",
+         "l": "右前门"
+        },
+        {
+         "v": "z2",
+         "l": "左后门"
+        },
+        {
+         "v": "z3",
+         "l": "右后门"
+        }
+       ]
+      },
+      {
+       "id": "l4c",
+       "n": "氛围灯亮度",
+       "en": "Ambient brightness",
+       "d": "分区默认亮度",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "原版是 10-100 的滑块，这里取三档常用值。",
+       "src": "Albert dashboard 常亮氛围灯",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "30",
+         "l": "30%"
+        },
+        {
+         "v": "60",
+         "l": "60%"
+        },
+        {
+         "v": "100",
+         "l": "100%"
+        }
+       ]
+      },
+      {
+       "id": "l4d",
+       "n": "氛围灯跟随转向灯",
+       "en": "Ambient follows indicator",
+       "d": "左右独立跟随，设置按驾驶员保存",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "turnFollowAmbient 独立区块，与常亮氛围灯互不覆盖。P4 侧可从 0x249/0x3C2 拿转向灯状态。",
+       "src": "Albert dashboard #turnFollowAmbientControls",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l4e",
+       "n": "迎宾灯效",
+       "en": "Welcome lighting",
+       "d": "开门聚焦，最后一个合格门关闭后播放一次展开。与常亮氛围灯独立，默认关闭",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "welcomeEnabled。设计图的「迎宾灯光 Albert」即此项，已合并，不再单列。",
+       "src": "Albert dashboard #welcomeEnabled",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "l4f",
+       "n": "灯效主题",
+       "en": "Welcome theme",
+       "d": "五种预设，按开门到关门的整段时序播放",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "welcomeStyle 0-4，默认 3 黑幕启幕（先暗场再按路径渐亮）。",
+       "src": "Albert dashboard welcome-theme-grid",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "柔光环抱"
+        },
+        {
+         "v": "1",
+         "l": "冰蓝流光"
+        },
+        {
+         "v": "2",
+         "l": "暖金礼序"
+        },
+        {
+         "v": "3",
+         "l": "黑幕启幕"
+        },
+        {
+         "v": "4",
+         "l": "光迹回环"
+        }
+       ]
+      },
+      {
+       "id": "l4g",
+       "n": "开门触发方式",
+       "en": "Welcome trigger",
+       "d": "先过滤座椅有人/未知/过期，再决定主驾优先",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "welcomeTriggerMode。通过开门筛选后资格会保持到关门，不是每次开门都重算。",
+       "src": "Albert dashboard #welcomeTriggerMode0",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "确认无人后"
+        },
+        {
+         "v": "1",
+         "l": "任何开门"
+        }
+       ]
+      },
+      {
+       "id": "l4h",
+       "n": "迎宾亮度与节奏",
+       "en": "Welcome brightness & tempo",
+       "d": "亮度 10-100%，节奏舒缓 / 标准 / 利落",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "welcomeBrightness 默认 40%，welcomeTempo 默认 1 标准。两项合并成一组，避免面板过长。",
+       "src": "Albert dashboard #welcomeBrightness / #welcomeTempo",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "slow",
+         "l": "舒缓"
+        },
+        {
+         "v": "normal",
+         "l": "标准"
+        },
+        {
+         "v": "fast",
+         "l": "利落"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "comf",
+   "name": "舒适与座椅",
+   "en": "Comfort & seats",
+   "note": "座椅按摩加热、记忆、空调与占用",
+   "sections": [
+    {
+     "id": "c1",
+     "name": "按摩与加热",
+     "en": "Massage & heat",
+     "items": [
+      {
+       "id": "c1a",
+       "n": "座椅按摩（腰托气囊）",
+       "en": "Seat massage",
+       "d": "充气 / 放气位交替驱动腰托气囊，压力读数（hPa）实时回显，节奏三挡",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图标注「0x3C2」。这一条要特别小心：0x3C2 在 P4 里是 VCLEFT 开关帧，无杆转向灯和座椅记忆都走它，Albert 也用它做灯光 Mux1。同一 ID 多用途，实现前必须先确认 Mux 号，否则按错 Mux 会误触发转向灯。",
+       "src": "设计图 P4CAN FUSION + vehicle_logic.h:VCLEFT_SWITCH_ID",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "c1b",
+       "n": "按摩节奏",
+       "en": "Massage tempo",
+       "d": "充放气交替的速度",
+       "t": "seg",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图「节奏三挡」。气囊压力上限原版未给数值，需实测确定。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "slow",
+         "l": "舒缓"
+        },
+        {
+         "v": "normal",
+         "l": "标准"
+        },
+        {
+         "v": "strong",
+         "l": "强劲"
+        }
+       ]
+      },
+      {
+       "id": "c1c",
+       "n": "按摩压力回显",
+       "en": "Massage pressure",
+       "d": "腰托气囊压力 hPa 实时读数，用于判断充放气是否真的在动",
+       "t": "info",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图「压力读数（hPa）实时回显」。没有这一路回读就无法判断气囊是否卡住，所以它是按摩功能的前置条件，不是可选项。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "GET /api/feifan/status"
+      },
+      {
+       "id": "c1d",
+       "n": "座椅加热快捷",
+       "en": "Seat heat shortcut",
+       "d": "滚轮长按切主驾加热挡位，不用进菜单",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图「滚轮长按切主驾加热挡位」。滚轮长按与滚轮换挡共用输入，必须有优先级仲裁，否则换挡时会被加热抢走。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "c1e",
+       "n": "座椅加热挡位",
+       "en": "Seat heat level",
+       "d": "关 / 1 / 2 / 3 挡",
+       "t": "seg",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "仅主驾。副驾加热仍是原车面板控制。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/action",
+       "o": [
+        {
+         "v": "0",
+         "l": "关"
+        },
+        {
+         "v": "1",
+         "l": "1 挡"
+        },
+        {
+         "v": "2",
+         "l": "2 挡"
+        },
+        {
+         "v": "3",
+         "l": "3 挡"
+        }
+       ]
+      },
+      {
+       "id": "c1f",
+       "n": "座椅占用伪装",
+       "en": "Seat occupancy spoof",
+       "d": "与安全带门冲突时，滚轮挂挡优先拦截。谨慎项",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图标注「Albert 0x30A，谨慎」。Albert 固件里 0x30A 出现过 2 次但与会话相关，未能确认就是座椅占用。风险点很实在：伪装「有人」会让 AEB 与安全气囊判定失真，所以默认关闭且不设快捷入口。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    },
+    {
+     "id": "c2",
+     "name": "座椅与记忆",
+     "en": "Seat & memory",
+     "items": [
+      {
+       "id": "b2a",
+       "n": "主驾座椅",
+       "en": "Driver seat",
+       "d": "含记忆与按摩控制；点按记忆恢复，长按保存",
+       "t": "sw",
+       "lv": "B",
+       "p4": "不可达",
+       "im": "开关位在 JS 里对应 seatState.driverMassage，读自设备信息包 byte18>>>3&1；写入走 CMD 0xA7 的 base+(on?1:0)。座椅执行器不在 P4 三路 CAN 可达范围。",
+       "src": "vehicleControl.js:144 handleDeviceInfo / :224 toggleSeatMassage",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "b2b",
+       "n": "主驾座椅调节",
+       "en": "Driver seat adjust",
+       "d": "按住持续调节，8 秒自动发停止码，松手即停",
+       "t": "grid",
+       "o": [
+        {
+         "v": "26",
+         "l": "前移",
+         "s": "0x1A"
+        },
+        {
+         "v": "27",
+         "l": "后移",
+         "s": "0x1B"
+        },
+        {
+         "v": "28",
+         "l": "靠背前",
+         "s": "0x1C"
+        },
+        {
+         "v": "29",
+         "l": "靠背后",
+         "s": "0x1D"
+        }
+       ],
+       "lv": "A",
+       "p4": "不可达",
+       "im": "CMD 0xA7 + [26/27/28/29]；sendSeatHoldStart 触发后启 8000ms 定时器，sendSeatHoldEnd / onHide / onUnload 都会补发 CMD 0xA7 + [16]（座椅停止）。这是防止一直顶住电机的安全设计，净室重写时必须保留。",
+       "src": "vehicleControl.js:279-302",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "b2c",
+       "n": "主驾记忆",
+       "en": "Driver memory",
+       "d": "记忆1 / 2 / 3 / 女王 / 露营；短按恢复、长按保存",
+       "t": "grid",
+       "o": [
+        {
+         "v": "52",
+         "l": "记忆1",
+         "s": "0x34"
+        },
+        {
+         "v": "54",
+         "l": "记忆2",
+         "s": "0x36"
+        },
+        {
+         "v": "56",
+         "l": "记忆3",
+         "s": "0x38"
+        },
+        {
+         "v": "60",
+         "l": "女王",
+         "s": "0x3C"
+        },
+        {
+         "v": "58",
+         "l": "露营",
+         "s": "0x3A"
+        }
+       ],
+       "lv": "A",
+       "p4": "不可达",
+       "im": "短按发 CMD 0xA7 + [code]（恢复），长按发 [code+1]（保存），长按前有确认弹窗；650ms 内重复触发会被节流。名称「女王/露营」只是 UI 标签。",
+       "src": "vehicleControl.js:7-16 / :303 sendSeatMemory",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "b2d",
+       "n": "副驾座椅调节",
+       "en": "Passenger seat adjust",
+       "d": "含副驾按摩与记忆控制",
+       "t": "grid",
+       "o": [
+        {
+         "v": "12",
+         "l": "前移",
+         "s": "0x0C"
+        },
+        {
+         "v": "13",
+         "l": "后移",
+         "s": "0x0D"
+        },
+        {
+         "v": "14",
+         "l": "靠背前",
+         "s": "0x0E"
+        },
+        {
+         "v": "15",
+         "l": "靠背后",
+         "s": "0x0F"
+        }
+       ],
+       "lv": "A",
+       "p4": "不可达",
+       "im": "CMD 0xA7 + [12..15]，机制与主驾一致；主驾 26..29、副驾 12..15，两组码段不重叠，说明固件用单字节动作码查表分派。",
+       "src": "vehicleControl.js:42-49",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "b2e",
+       "n": "副驾记忆",
+       "en": "Passenger memory",
+       "d": "记忆1 / 2 / 3 / 女王 / 露营",
+       "t": "grid",
+       "o": [
+        {
+         "v": "62",
+         "l": "记忆1",
+         "s": "0x3E"
+        },
+        {
+         "v": "64",
+         "l": "记忆2",
+         "s": "0x40"
+        },
+        {
+         "v": "66",
+         "l": "记忆3",
+         "s": "0x42"
+        },
+        {
+         "v": "70",
+         "l": "女王",
+         "s": "0x46"
+        },
+        {
+         "v": "68",
+         "l": "露营",
+         "s": "0x44"
+        }
+       ],
+       "lv": "A",
+       "p4": "不可达",
+       "im": "CMD 0xA7 + [62..70]，长按 code+1 保存。",
+       "src": "vehicleControl.js:17-27",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "b2f",
+       "n": "编辑记忆名称",
+       "en": "Edit memory names",
+       "d": "主驾 / 副驾各自 5 个名称可自定义",
+       "t": "info",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "纯小程序本地 storage（readAll / saveGroup），只改显示文案，不下发模块。P4 若做可直接放浏览器 localStorage 或 NVS 的 UI 配置。",
+       "src": "vehicleControl.js:342 refreshSeatMemoryLabels",
+       "api": "（前端本地）"
+      },
+      {
+       "id": "b2g",
+       "n": "副驾便利进出",
+       "en": "Passenger easy access",
+       "d": "副驾座椅便利进出触发条件",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "副驾安全带解系时"
+        },
+        {
+         "v": "2",
+         "l": "副驾车门开关时"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "不是动作码，而是配置块字段 frontRightEasyAccess：byte25 >>> 3 & 3。修改时 buildState -> updateState -> writeBytes 生成整块，再 CMD 0xA3 (163) 写回；回显读 e[25]>>>3&3。",
+       "src": "SETTINGS 表 / vehicleControl.js:235 pickEasyAccess",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    },
+    {
+     "id": "c3",
+     "name": "空调与便利",
+     "en": "HVAC",
+     "items": [
+      {
+       "id": "c3a",
+       "n": "空调快捷",
+       "en": "HVAC shortcut",
+       "d": "远程预冷 / 预热模板，上车前在首页一键触发",
+       "t": "seg",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "设计图标注「TSL 0x2E5」。0x2E5 在 P4 源码里搜不到，属需新增帧；TSL 侧走 CMD 0xA7 动作码，不直接发 CAN。这两条路径得二选一，不能混。",
+       "src": "设计图 P4CAN FUSION",
+       "api": "POST /api/feifan/action",
+       "o": [
+        {
+         "v": "cool",
+         "l": "远程预冷"
+        },
+        {
+         "v": "heat",
+         "l": "远程预热"
+        },
+        {
+         "v": "tmpl",
+         "l": "模板"
+        }
+       ]
+      },
+      {
+       "id": "b3a",
+       "n": "空调烘干",
+       "en": "HVAC dry after parking",
+       "d": "停车后自动干燥空调风道",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "烘干1分钟"
+        },
+        {
+         "v": "2",
+         "l": "烘干5分钟"
+        },
+        {
+         "v": "3",
+         "l": "烘干10分钟"
+        }
+       ],
+       "lv": "A",
+       "p4": "不可达",
+       "im": "配置块字段 airAutoArid：byte33 >>> 4 & 3（0/1/2/3 对应四档），写入走 CMD 0xA3 整块回写，回显读 e[33]>>>4&3。属于座舱 HVAC 执行器，P4 三路 CAN 不可达。",
+       "src": "SETTINGS 表 / vehicleControl.js:256 pickAirDry",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ap",
+   "name": "免打扰与 AP",
+   "en": "Nag & AP",
+   "note": "提醒抑制、AP/EAP/FSD 开关与轮询算法",
+   "sections": [
+    {
+     "id": "a1",
+     "name": "免打扰设置",
+     "en": "Nag suppression",
+     "items": [
+      {
+       "id": "a1a",
+       "n": "注视提醒抑制",
+       "en": "Gaze reminder suppression",
+       "d": "辅助驾驶时自动抑制注意力提醒",
+       "t": "sw",
+       "lv": "B",
+       "p4": "已有",
+       "im": "截图中新增项，本 APK 小程序版本里没有对应字段。按同构推断为配置块某个 bit 或 0x3FD 驾驶员监控位。P4 开源侧已有 Disable Driver Monitoring / driver_monitor_capture.h 与 LAB 门控，属于「已有等价」而非新增。",
+       "src": "截图 3；本包 SETTINGS 无此项",
+       "api": "POST /api/feifan/config（待核对位）"
+      },
+      {
+       "id": "a1b",
+       "n": "限速提示抑制",
+       "en": "ISA chime suppression",
+       "d": "抑制 ISA 限速提示音",
+       "t": "sw",
+       "lv": "B",
+       "p4": "已有",
+       "im": "同上，截图新增项。P4 v3.29.3 已含 isa_suppression_pure.h / ISA chime Suppression，直接复用即可。",
+       "src": "截图 3 / P4can isa_suppression_pure.h",
+       "api": "POST /api/feifan/config（映射现有 ISA 设置）"
+      },
+      {
+       "id": "a1c",
+       "n": "禁用视觉限速",
+       "en": "Disable visual speed limit",
+       "d": "关闭视觉限速提醒",
+       "t": "sw",
+       "lv": "B",
+       "p4": "已有",
+       "im": "截图新增项；P4 侧对应 Visual Speed Control Settings / Country-Map 相关设置， behaviour 需实车确认。",
+       "src": "截图 3",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "a1d",
+       "n": "方向盘提醒抑制",
+       "en": "Hands-on-wheel suppression",
+       "d": "辅助驾驶时自动抑制方向盘提醒",
+       "t": "sw",
+       "lv": "B",
+       "p4": "已有",
+       "im": "截图新增项。P4 已有 Nag Killer（Mode H / TSL9 方式）与完整的力矩参数、 refractory、visual warning rescue 状态机，无需重写。",
+       "src": "截图 3 / P4can mode_h_pure.h / r79_dms_composition_pure.h",
+       "api": "POST /api/feifan/config（映射现有 NAG 设置）"
+      },
+      {
+       "id": "a1e",
+       "n": "方向盘抑制方式",
+       "en": "Suppression method",
+       "d": "滚轮 / 无感 / 滚轮+无感",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "滚轮"
+        },
+        {
+         "v": "1",
+         "l": "无感"
+        },
+        {
+         "v": "2",
+         "l": "滚轮+无感"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置块字段 ModeMDR：byte29 >>> 0 & 3，取值 0/1/2；apHelper 里还用该值控制 mdrWheelOn（1 !== value），即选「无感」时隐藏滚轮策略相关项。",
+       "src": "apHelper.js:94 / SETTINGS 表",
+       "api": "POST /api/feifan/config {id:'ModeMDR'}"
+      },
+      {
+       "id": "a1f",
+       "n": "时间随机",
+       "en": "Randomised timing",
+       "d": "滚轮操作间隔随机化",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 rand：byte28 >>> 0 & 1。resolveDelayMs 里 rand=1 时用 a+(b-a)*random() 在区间内取随机秒数，否则取区间中点。",
+       "src": "SETTINGS 表 / WHEEL_ACTIONS 模块 resolveDelayMs",
+       "api": "POST /api/feifan/config {id:'rand'}"
+      },
+      {
+       "id": "a1g",
+       "n": "滚轮操作时间",
+       "en": "Wheel action interval",
+       "d": "模块模拟滚轮动作间隔",
+       "t": "seg",
+       "o": [
+        {
+         "v": "1",
+         "l": "2-3秒"
+        },
+        {
+         "v": "2",
+         "l": "3-5秒"
+        },
+        {
+         "v": "3",
+         "l": "5-10秒"
+        },
+        {
+         "v": "4",
+         "l": "10-15秒"
+        },
+        {
+         "v": "5",
+         "l": "15-20秒"
+        },
+        {
+         "v": "6",
+         "l": "20-25秒"
+        },
+        {
+         "v": "7",
+         "l": "25-30秒"
+        },
+        {
+         "v": "8",
+         "l": "30-35秒"
+        },
+        {
+         "v": "15",
+         "l": "定点免打扰"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 time：byte27 >>> 0 & 15。区间表 {1:[2,3],2:[3,5],3:[5,10],4:[10,15],5:[15,20],6:[20,25],7:[25,30],8:[30,35],15:[30,30]} 秒；15 为定点（固定 30 秒）。",
+       "src": "SETTINGS 表 / WHEEL_ACTIONS 模块 r 表",
+       "api": "POST /api/feifan/config {id:'time'}"
+      },
+      {
+       "id": "a1h",
+       "n": "加减时间间隔",
+       "en": "Up/down action gap",
+       "d": "自动加减动作之间的间隔",
+       "t": "seg",
+       "o": [
+        {
+         "v": "1",
+         "l": "0.1s"
+        },
+        {
+         "v": "2",
+         "l": "0.2s"
+        },
+        {
+         "v": "3",
+         "l": "0.3s"
+        },
+        {
+         "v": "4",
+         "l": "0.4s"
+        },
+        {
+         "v": "5",
+         "l": "0.5s"
+        },
+        {
+         "v": "6",
+         "l": "0.6s"
+        },
+        {
+         "v": "7",
+         "l": "0.7s"
+        },
+        {
+         "v": "8",
+         "l": "0.8s"
+        },
+        {
+         "v": "9",
+         "l": "0.9s"
+        },
+        {
+         "v": "10",
+         "l": "1.0s"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 jg：byte32 >>> 0 & 15。buildCycle 里 actionGapMs = jg * 100（1..10 -> 100..1000ms），越界或非整数默认 1000ms。",
+       "src": "SETTINGS 表 / WHEEL_ACTIONS 模块 buildCycle",
+       "api": "POST /api/feifan/config {id:'jg'}"
+      },
+      {
+       "id": "a1i",
+       "n": "加减类型",
+       "en": "Up/down order",
+       "d": "加减的执行顺序",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "先加后减"
+        },
+        {
+         "v": "1",
+         "l": "先减后加"
+        },
+        {
+         "v": "2",
+         "l": "加减交替"
+        },
+        {
+         "v": "3",
+         "l": "加减随机"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 jj：byte33 >>> 0 & 3。buildCycle 生成 [up,down] 或 [down,up] 两动作序列；2 按序号交替，3 用 Math.random() 决定。",
+       "src": "SETTINGS 表 / WHEEL_ACTIONS 模块 buildCycle",
+       "api": "POST /api/feifan/config {id:'jj'}"
+      },
+      {
+       "id": "a1j",
+       "n": "滚轮选择",
+       "en": "Wheel selection",
+       "d": "操作滚轮选择",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "左滚轮"
+        },
+        {
+         "v": "1",
+         "l": "右滚轮"
+        },
+        {
+         "v": "2",
+         "l": "左右交替"
+        },
+        {
+         "v": "3",
+         "l": "左右随机"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 lr：byte28 >>> 6 & 3。buildCycle 里 0=left、1=right、2=按周期序号奇偶交替、3=随机；选中后再查 WHEEL_ACTIONS[left|right] 取键值。",
+       "src": "SETTINGS 表 / WHEEL_ACTIONS 模块 buildCycle",
+       "api": "POST /api/feifan/config {id:'lr'}"
+      },
+      {
+       "id": "a1k",
+       "n": "自动免打扰",
+       "en": "Auto nag suppression",
+       "d": "跟随车机自动进入免打扰",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 automdr：byte28 >>> 4 & 1（0 关闭 / 1 跟随 AP）。与截图里的「注视/限速/视觉/方向盘」四项不同，这是本包确实存在的一项。",
+       "src": "SETTINGS 表 / apHelper.js:89",
+       "api": "POST /api/feifan/config {id:'automdr'}"
+      },
+      {
+       "id": "a1l",
+       "n": "免打扰周期算法",
+       "en": "Nag cycle algorithm",
+       "d": "随机延迟 + 滚轮选择 + 动作顺序 + 动作间隔",
+       "t": "info",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "完整链路已还原：resolveDelayMs(time,rand) 决定下一轮等待秒数 -> buildCycle(lr,jj,jg) 决定这一轮用哪只滚轮、先发 up 还是 down、两动作间隔多少毫秒 -> 每个动作最终转成 CMD 0xBB + WHEEL_ACTIONS 键值。P4 侧可用一个 FreeRTOS 任务 + runtime_gate 门控复刻，务必保留「停车硬暂停 / 视觉告警救援 / 物理滚轮输入优先」。",
+       "src": "WHEEL_ACTIONS (A1604D07) buildCycle / resolveDelayMs",
+       "api": "（固件侧调度，无需单独 API）"
+      }
+     ]
+    },
+    {
+     "id": "a2",
+     "name": "AP 设置",
+     "en": "AP settings",
+     "items": [
+      {
+       "id": "a2a",
+       "n": "启用红绿灯识别",
+       "en": "Traffic-light recognition",
+       "d": "开启 AP 模式下红绿灯识别功能（需固件版本 4.3.0 以上）",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项，本包 SETTINGS 无对应字段，且带固件版本门槛。推断为新配置块 bit + 车机侧能力位，需抓新版小程序或实车抓包确认。",
+       "src": "截图 4",
+       "api": "POST /api/feifan/config（待核对）"
+      },
+      {
+       "id": "a2b",
+       "n": "绿灯自动起步",
+       "en": "Auto start on green",
+       "d": "绿灯亮起时自动起步（暂不开放）",
+       "t": "sw",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "截图明确标注「暂不开放」，属于 UI 占位。P4 页面保留禁用态即可，不接后端。",
+       "src": "截图 4",
+       "api": "（禁用占位）"
+      },
+      {
+       "id": "a2d",
+       "n": "青春版 EAP",
+       "en": "EAP lite",
+       "d": "启用青春版 EAP，需要车机设置下拉两次开启 AP",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项，本包无字段。行为描述与「自动补一次下拉操作」相似，可能与 oneClickOpenAP 共用拨杆帧路径。",
+       "src": "截图 4",
+       "api": "POST /api/feifan/config（待核对）"
+      },
+      {
+       "id": "a2e",
+       "n": "一键 AP",
+       "en": "One-tap AP",
+       "d": "自动补一次下拉操作，实现变道时不降速",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 oneClickOpenAP：byte31 >>> 3 & 1。写入走 CMD 0xA3 整块回写。",
+       "src": "SETTINGS 表 / apHelper.js:73",
+       "api": "POST /api/feifan/config {id:'oneClickOpenAP'}"
+      },
+      {
+       "id": "a2f",
+       "n": "AP 自动恢复",
+       "en": "AP auto resume",
+       "d": "退出 AP 后自动恢复",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "双击右滚轮"
+        },
+        {
+         "v": "2",
+         "l": "下拉档杆"
+        },
+        {
+         "v": "3",
+         "l": "跟随AP"
+        }
+       ],
+       "lv": "A",
+       "p4": "已有",
+       "im": "字段 apAutoOpenType：byte28 >>> 1 & 3。P4 已有 continuous_ap_fsm_pure.h / continuous_ap_runtime.h（Continuous AP）等价状态机，可做映射而非重写。",
+       "src": "SETTINGS 表 / apHelper.js:41",
+       "api": "映射现有 Continuous AP 设置"
+      },
+      {
+       "id": "a2g",
+       "n": "AP 恢复延时",
+       "en": "AP resume delay",
+       "d": "AP 恢复触发后的等待时间（0–7 秒）",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "立即"
+        },
+        {
+         "v": "1",
+         "l": "1秒"
+        },
+        {
+         "v": "2",
+         "l": "2秒"
+        },
+        {
+         "v": "3",
+         "l": "3秒"
+        },
+        {
+         "v": "4",
+         "l": "4秒"
+        },
+        {
+         "v": "5",
+         "l": "5秒"
+        },
+        {
+         "v": "6",
+         "l": "6秒"
+        },
+        {
+         "v": "7",
+         "l": "7秒"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 apAutoOpenTime：byte30 >>> 1 & 7。这个字段只在「参数配置」页出现，截图里没画出来，属于逆向额外挖到的隐藏项。",
+       "src": "SETTINGS 表 / apHelper.js:53",
+       "api": "POST /api/feifan/config {id:'apAutoOpenTime'}"
+      },
+      {
+       "id": "a2h",
+       "n": "开启手动远光",
+       "en": "Manual high beam",
+       "d": "AP 模式下开启手动远光灯",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "老款"
+        },
+        {
+         "v": "2",
+         "l": "焕新版"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 apHighBeam：byte31 >>> 4 & 3（0 关闭 / 1 老-AP手动远光 / 2 新-随心远光）。",
+       "src": "SETTINGS 表 / apHelper.js:107",
+       "api": "POST /api/feifan/config {id:'apHighBeam'}"
+      },
+      {
+       "id": "a2i",
+       "n": "AP 超速退出",
+       "en": "AP overspeed exit",
+       "d": "超速时退出 AP 辅助功能",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 apOverspeedExit：byte34 >>> 0 & 1。",
+       "src": "SETTINGS 表 / apHelper.js:77",
+       "api": "POST /api/feifan/config {id:'apOverspeedExit'}"
+      },
+      {
+       "id": "a2j",
+       "n": "关闭自动雨刮",
+       "en": "Disable auto wiper in AP",
+       "d": "AP 模式下关闭自动雨刮",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "字段 OffAPAutoWiper：byte25 >>> 7 & 1。",
+       "src": "SETTINGS 表 / apHelper.js:103",
+       "api": "POST /api/feifan/config {id:'OffAPAutoWiper'}"
+      }
+     ]
+    },
+    {
+     "id": "a3",
+     "name": "EAP 设置",
+     "en": "EAP settings",
+     "items": [
+      {
+       "id": "a3a",
+       "n": "EAP 增强",
+       "en": "EAP enhanced",
+       "d": "开启自动打转向灯，打转向灯自动变道",
+       "t": "sw",
+       "lv": "A",
+       "p4": "已有",
+       "im": "字段 id 就叫 fsd：byte28 >>> 5 & 1（SETTINGS 里名字是「EAP辅助」，apHelper 里叫「EAP增强」）。P4 的 Advanced EAP / auto_blinker_pure.h 是等价实现。",
+       "src": "SETTINGS 表 / apHelper.js:83",
+       "api": "映射现有 Advanced EAP 端点"
+      },
+      {
+       "id": "a3b",
+       "n": "EU 召唤解锁",
+       "en": "EU summon unlock",
+       "d": "关闭 / 模式二(保留 bit18) / 模式一(清 bit18)",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "模式二"
+        },
+        {
+         "v": "2",
+         "l": "模式一"
+        }
+       ],
+       "lv": "B",
+       "p4": "已有",
+       "im": "截图新增项，本包无字段。P4 侧已有 R79 固定策略：UI_applyEceR79 bit19 强制 0、UI_hardCoreSummon bit47 强制 1、SmartSummonOnly bit18 可选 FORCE 0 / STOCK（r79_fixed_policy_pure.h），与截图描述完全对应，直接映射即可。",
+       "src": "截图 4 / P4can r79_fixed_policy_pure.h",
+       "api": "映射现有 /api/r79 设置"
+      },
+      {
+       "id": "a3c",
+       "n": "变道激进度",
+       "en": "Lane-change aggressiveness",
+       "d": "温和(默认) / 适中 / 激进 / 保持原厂",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "温和"
+        },
+        {
+         "v": "1",
+         "l": "适中"
+        },
+        {
+         "v": "2",
+         "l": "激进"
+        },
+        {
+         "v": "3",
+         "l": "保持原厂"
+        }
+       ],
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项，本包无字段。推断为 0x3F8 / 0x293 相关参数或配置块 2bit 枚举；需新版小程序或实车抓包。",
+       "src": "截图 4",
+       "api": "POST /api/feifan/config（待核对）"
+      },
+      {
+       "id": "a3d",
+       "n": "召唤心跳 (LAB)",
+       "en": "Summon heartbeat (LAB)",
+       "d": "实验功能，手动覆盖召唤心跳值",
+       "t": "sw",
+       "lv": "B",
+       "p4": "已有",
+       "im": "截图新增 LAB 项。P4 已有 panelLabSummonHeartbeat（0x3F8 UI_driverAssistControl / UI_summonHeartbeat bits 2-3，raw 0-3），可直接映射。",
+       "src": "截图 5 / P4can dashboard_source.html panelLabSummonHeartbeat",
+       "api": "映射现有 LAB endpoint"
+      },
+      {
+       "id": "a3e",
+       "n": "召唤心跳值 (LAB)",
+       "en": "Summon heartbeat value",
+       "d": "0 / 1 / 2(默认) / 3",
+       "t": "seg",
+       "o": [
+        {
+         "v": "0",
+         "l": "0"
+        },
+        {
+         "v": "1",
+         "l": "1"
+        },
+        {
+         "v": "2",
+         "l": "2 默认"
+        },
+        {
+         "v": "3",
+         "l": "3"
+        }
+       ],
+       "lv": "B",
+       "p4": "已有",
+       "im": "同上，2bit 值直接对应 0x3F8 的 UI_summonHeartbeat。",
+       "src": "截图 5 / P4can panelLabSummonHeartbeat",
+       "api": "映射现有 LAB endpoint"
+      }
+     ]
+    },
+    {
+     "id": "a4",
+     "name": "FSD 设置",
+     "en": "FSD settings",
+     "items": [
+      {
+       "id": "a4a",
+       "n": "FSD 激活",
+       "en": "FSD activation",
+       "d": "激活已购买的 FSD 功能",
+       "t": "sw",
+       "lv": "B",
+       "p4": "不可达",
+       "im": "截图项。本包 apHelper 的 FSD 分组里所有条目都标了 uiOnly:true，点击只弹「固件不支持」，既没有 bit 也没有 CMD。注意： entitlement / 订阅校验不在模块能力范围，开源三仓库都明写需要有效 EAP/FSD 订阅，P4 侧也不做授权破解。",
+       "src": "截图 5 / apHelper.js:196-233 / 三个开源仓库 README",
+       "api": "（不接入）"
+      },
+      {
+       "id": "a4b",
+       "n": "硬件模式",
+       "en": "Hardware mode",
+       "d": "车辆类型切换 HW3 / HW4",
+       "t": "seg",
+       "o": [
+        {
+         "v": "1",
+         "l": "HW3"
+        },
+        {
+         "v": "2",
+         "l": "HW4"
+        }
+       ],
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "本包对应项 fsdHwMode 是 uiOnly（自动检测 / HW3 / HW4 / 旧版），纯 UI 占位。P4 有 vehicle profile，但那是车型拓扑，不是 FSD 硬件授权模式，不要混为一谈。",
+       "src": "截图 5 / apHelper.js:202",
+       "api": "（不接入）"
+      },
+      {
+       "id": "a4c",
+       "n": "紧急车辆避让",
+       "en": "Emergency vehicle avoidance",
+       "d": "HW4 专属，需车型 HW4 且 AP 激活",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项；ev-open-can-tools-plugins 里有 emergency-vehicle-detection-hw4.json 示例规则可作参考，但它属于插件规则层，不保证与 TSL 行为一致。",
+       "src": "截图 5 / evoct-plugins HW4",
+       "api": "POST /api/feifan/config（待核对）"
+      },
+      {
+       "id": "a4d",
+       "n": "车道线可视化",
+       "en": "Lane line visualisation",
+       "d": "AP 激活时显示车道线",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项，推断为车机显示相关的配置位，需抓包。",
+       "src": "截图 5",
+       "api": "POST /api/feifan/config（待核对）"
+      },
+      {
+       "id": "a4e",
+       "n": "导航 FSD 线路",
+       "en": "Navigation FSD route",
+       "d": "导航时显示 FSD 线路",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项，推断为车机显示相关的配置位，需抓包。",
+       "src": "截图 5",
+       "api": "POST /api/feifan/config（待核对）"
+      },
+      {
+       "id": "a4f",
+       "n": "AP-First 模式",
+       "en": "AP-First mode",
+       "d": "优先维持 AP",
+       "t": "sw",
+       "lv": "B",
+       "p4": "已有",
+       "im": "截图新增项；P4 有 continuous_ap_runtime.h / AP-First 相关门控与 Pause TLSSC During NOA，语义接近，需实车核对后再映射。",
+       "src": "截图 5 / P4can 源码",
+       "api": "映射现有 Continuous AP 设置"
+      },
+      {
+       "id": "a4g",
+       "n": "Autopark 拦截",
+       "en": "Autopark interception",
+       "d": "泊车时暂停模块注入",
+       "t": "sw",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图新增项。属于注入总闸的联动条件：检测到泊车状态时应暂停所有周期性注入。P4 已有 runtime_gate_pure.h 与 park-state 监控（summon_state_pure.h），加一个 gate 条件即可。",
+       "src": "截图 5 / P4can runtime_gate_pure.h",
+       "api": "POST /api/feifan/config（gate 条件）"
+      },
+      {
+       "id": "a4h",
+       "n": "本包 FSD 分组占位说明",
+       "en": "Placeholder note",
+       "d": "FSD 改装 / 中国模式 / 抑制 ISA / 抑制转向提醒 / 速度偏移 / 速度来源 / 速度档位",
+       "t": "info",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "这 8 项在 app-service.main.js 的 apHelper 页里全部带 uiOnly:true，toggleConfig/selectOption/inputConfig 都会走 lockFsdToast() 弹「固件不支持」或「需要连接模块」，不产生任何 BLE 写入。截图里能操作说明用户看到的是更新版小程序/固件。做 P4 页面时建议保留这一组但默认禁用并明确标注，避免误以为已实现。",
+       "src": "apHelper.js:196-233, :429 lockFsdToast",
+       "api": "（不接入）"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "body",
+   "name": "车身与开合",
+   "en": "Body & latches",
+   "note": "车门锁扣、开合状态、提醒与滚轮模拟",
+   "sections": [
+    {
+     "id": "b1",
+     "name": "车身开合",
+     "en": "Latches",
+     "items": [
+      {
+       "id": "b1a",
+       "n": "车身示意图",
+       "en": "Body diagram",
+       "d": "点击车身部位切换开合；中控锁支持解锁 / 锁定",
+       "t": "info",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "截图里的车形热区是 WXML 的 dataset.key / dataset.code。点击后先本地反转 bodyState[key]，再发 CMD 0xA7 + 1 字节动作码；失败时回滚本地状态。本 APK 只解出 app-service.js，未含 WXML，故各部位具体 code 未逐项确认。",
+       "src": "vehicleControl.js:178 sendBodyPart",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "b1b",
+       "n": "车门 / 前后备箱 / 后视镜",
+       "en": "Doors, frunk, trunk, mirrors",
+       "d": "前备箱、后备箱、左前门、右前门、左后门、右后门、后视镜折叠",
+       "t": "grid",
+       "o": [
+        {
+         "v": "frunk",
+         "l": "前备箱"
+        },
+        {
+         "v": "trunk",
+         "l": "后备箱"
+        },
+        {
+         "v": "lf",
+         "l": "左前门"
+        },
+        {
+         "v": "rf",
+         "l": "右前门"
+        },
+        {
+         "v": "lr",
+         "l": "左后门"
+        },
+        {
+         "v": "rr",
+         "l": "右后门"
+        },
+        {
+         "v": "mirror",
+         "l": "后视镜折叠"
+        }
+       ],
+       "lv": "B",
+       "p4": "不可达",
+       "im": "同样是 CMD 0xA7 单字节动作码。状态回显不靠这些按钮，而是 CMD 0xB0 (176) 仪表帧解析出 doorList[0..3] / frunkIsOpen / trunkIsOpen 后重建 bodyState。注意：这类车身/座舱执行器在 TSL 上多走车身以太网或专用总线，P4 三路 CAN 收发器物理够不到，换固件也解决不了。",
+       "src": "vehicleControl.js:116 buildBodyStateFromGauge / :133 handleGaugePacket",
+       "api": "GET /api/feifan/gauge"
+      },
+      {
+       "id": "b1c",
+       "n": "中控锁",
+       "en": "Central lock",
+       "d": "解锁 / 锁定，发送后本地立刻更新 locked 状态",
+       "t": "seg",
+       "o": [
+        {
+         "v": "23",
+         "l": "解锁",
+         "s": "0x17"
+        },
+        {
+         "v": "22",
+         "l": "锁定",
+         "s": "0x16"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "CMD 0xA7 (167)，payload = [动作码]；code 23 解锁、22 锁定，成功 Toast 分别为「解锁成功 / 锁定成功」。这是全部车控里唯一在 JS 里写死、可确证的 code 对。",
+       "src": "vehicleControl.js:208 sendCarLock",
+       "api": "POST /api/feifan/action {code:22|23}"
+      },
+      {
+       "id": "b1d",
+       "n": "车身状态回显",
+       "en": "Body state feedback",
+       "d": "门 / 盖开合由周期性仪表帧驱动，不是按钮回包",
+       "t": "info",
+       "lv": "A",
+       "p4": "已有",
+       "im": "onLoad 注册 app.onPacket(176, handleGaugePacket)，用 parseGaugeFrame 解析出 doorList / frunk / trunk；页面 onShow 还会 acquire 一次仪表快照。P4 侧已有三路 CAN RX 分发与状态缓存，接一个解析函数即可。",
+       "src": "vehicleControl.js:93 / :116 / :129",
+       "api": "GET /api/feifan/gauge"
+      },
+      {
+       "id": "b1e",
+       "n": "门把手开关前备箱",
+       "en": "Handle opens frunk",
+       "d": "按住门把手多久触发前备箱，单位秒",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 TimeOpenFrontBox，byte29 >>> 2 & 7。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 TimeOpenFrontBox",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "1 秒"
+        },
+        {
+         "v": "2",
+         "l": "2 秒"
+        },
+        {
+         "v": "3",
+         "l": "3 秒"
+        }
+       ]
+      },
+      {
+       "id": "b1f",
+       "n": "门把手开关充电口",
+       "en": "Handle opens charge port",
+       "d": "按住门把手多久触发充电口盖",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 TimeOpenChargeDoor，byte29 >>> 5 & 7。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 TimeOpenChargeDoor",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "关闭"
+        },
+        {
+         "v": "1",
+         "l": "1 秒"
+        },
+        {
+         "v": "2",
+         "l": "2 秒"
+        },
+        {
+         "v": "3",
+         "l": "3 秒"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "b5",
+     "name": "提醒与显示",
+     "en": "Alerts & display",
+     "items": [
+      {
+       "id": "b5a",
+       "n": "主驾安全带提醒",
+       "en": "Driver belt reminder",
+       "d": "关闭后主驾不系安全带不再提示。台架必需，上路别关",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 frontLeftBuckle，byte34 >>> 1 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。注意：这条不影响 d2b 换挡安全门，那个读的是真实安全带状态。",
+       "src": "TSL SETTINGS 位域 frontLeftBuckle",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "b5b",
+       "n": "副驾安全带提醒",
+       "en": "Passenger belt reminder",
+       "d": "副驾安全带提示开关",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 frontRightBuckle，byte34 >>> 2 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 frontRightBuckle",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "b5c",
+       "n": "后排安全带提醒",
+       "en": "Rear belt reminder",
+       "d": "后排安全带提示开关",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 rearBuckle，byte34 >>> 3 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 rearBuckle",
+       "api": "POST /api/feifan/config"
+      },
+      {
+       "id": "b5d",
+       "n": "提示音音量",
+       "en": "Chime volume",
+       "d": "车辆提示音整体音量",
+       "t": "seg",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 beep，byte26 >>> 0 & 255。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。八比特，原版给的是 0-255 的直通值。",
+       "src": "TSL SETTINGS 位域 beep",
+       "api": "POST /api/feifan/config",
+       "o": [
+        {
+         "v": "0",
+         "l": "静音"
+        },
+        {
+         "v": "1",
+         "l": "低"
+        },
+        {
+         "v": "2",
+         "l": "中"
+        },
+        {
+         "v": "3",
+         "l": "高"
+        }
+       ]
+      },
+      {
+       "id": "b5e",
+       "n": "LED 灯开关",
+       "en": "LED switch",
+       "d": "车内 LED 照明总开关",
+       "t": "sw",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "配置位域 led，byte27 >>> 4 & 1。读：0xAB 整块回包后按位取；写：先清位再或入，最后 CMD 0xA3 整块回写。",
+       "src": "TSL SETTINGS 位域 led",
+       "api": "POST /api/feifan/config"
+      }
+     ]
+    },
+    {
+     "id": "b4",
+     "name": "模拟滚轮",
+     "en": "Scroll wheel",
+     "items": [
+      {
+       "id": "b4a",
+       "n": "当前操作滚轮",
+       "en": "Active wheel",
+       "d": "左滚轮 / 右滚轮切换（纯前端选中态）",
+       "t": "seg",
+       "o": [
+        {
+         "v": "left",
+         "l": "左滚轮"
+        },
+        {
+         "v": "right",
+         "l": "右滚轮"
+        }
+       ],
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "仅 changeWheelSide 改 wheelSide / wheelSideLabel，用来选择查哪张键值表，不发给模块。",
+       "src": "vehicleControl.js:315",
+       "api": "（前端本地）"
+      },
+      {
+       "id": "b4b",
+       "n": "五向按键（左滚轮）",
+       "en": "Left wheel keys",
+       "d": "上 / 下 / 左 / 右 / 确认",
+       "t": "grid",
+       "o": [
+        {
+         "v": "141",
+         "l": "上",
+         "s": "音量+1"
+        },
+        {
+         "v": "142",
+         "l": "下",
+         "s": "音量-1"
+        },
+        {
+         "v": "143",
+         "l": "左",
+         "s": "上一曲"
+        },
+        {
+         "v": "144",
+         "l": "右",
+         "s": "下一曲"
+        },
+        {
+         "v": "140",
+         "l": "确认",
+         "s": "播放/暂停"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "CMD 0xBB (187) + [value]，value 来自 WHEEL_ACTIONS.left。180ms 按键高亮，150ms 内重复触发节流（连续 3 次提示「操作过快」）。P4 已有 0x249 拨杆帧合成与 TX 仲裁设施，滚轮按键帧需另按目标车型实车抓包确认。",
+       "src": "WHEEL_ACTIONS (A1604D07) / vehicleControl.js:320",
+       "api": "POST /api/feifan/action {wheel:'left',direction}"
+      },
+      {
+       "id": "b4c",
+       "n": "五向按键（右滚轮）",
+       "en": "Right wheel keys",
+       "d": "车速 / 车距 / 一键最高限速",
+       "t": "grid",
+       "o": [
+        {
+         "v": "146",
+         "l": "上",
+         "s": "车速+1"
+        },
+        {
+         "v": "147",
+         "l": "下",
+         "s": "车速-1"
+        },
+        {
+         "v": "148",
+         "l": "左",
+         "s": "车距+1"
+        },
+        {
+         "v": "149",
+         "l": "右",
+         "s": "车距-1"
+        },
+        {
+         "v": "24",
+         "l": "确认",
+         "s": "一键最高限速"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "CMD 0xBB + WHEEL_ACTIONS.right 的 value。免打扰策略的「加减」其实就是反复发 up/down 这两个值，靠定时与随机化模拟人手拨轮。",
+       "src": "WHEEL_ACTIONS (A1604D07)",
+       "api": "POST /api/feifan/action {wheel:'right',direction}"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "home",
+   "name": "仪表与快捷",
+   "en": "Gauges & shortcuts",
+   "note": "实时数据、胎压与一键快捷",
+   "sections": [
+    {
+     "id": "h1",
+     "name": "仪表盘",
+     "en": "Gauges",
+     "items": [
+      {
+       "id": "h1a",
+       "n": "实时数据",
+       "en": "Live telemetry",
+       "d": "总压 / 电流 / 温度 / SOC / 剩余里程 / 总里程",
+       "t": "info",
+       "lv": "A",
+       "p4": "已有",
+       "im": "CMD 0xB0 (176) 周期仪表帧，parseGaugeFrame 解析后写入 status / health；首页还有 homeHealthSnapshot 本地缓存与「线束未插好」告警位。P4 已有三路 CAN RX 与仪表风格的 HOME 页，接字段映射即可。",
+       "src": "pages/index/index.js / F8FB8B01 gauge 解析模块",
+       "api": "GET /api/feifan/gauge"
+      },
+      {
+       "id": "h1b",
+       "n": "仪表盘自动启动",
+       "en": "Auto-start gauge",
+       "d": "进入 App 自动打开仪表盘",
+       "t": "sw",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "本地 storage key isAutoGauge，只控制前端跳转，不下发模块。",
+       "src": "pages/index/index.js o=\"isAutoGauge\"",
+       "api": "（前端本地）"
+      },
+      {
+       "id": "h1c",
+       "n": "TPMS 信息",
+       "en": "TPMS",
+       "d": "直读蓝牙胎压传感器，四轮胎压 / 温度",
+       "t": "info",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "pages/tpms/tpms.js 有独立页面与四轮数据模型；现代特斯拉用 BLE 胎压传感器，需要 P4 的 BLE 主机扫描与解析，属于新增能力，不是 CAN 帧。",
+       "src": "pages/tpms/tpms.js / pages/set/set.js",
+       "api": "GET /api/feifan/tpms（建议新增）"
+      }
+     ]
+    },
+    {
+     "id": "h2",
+     "name": "快捷动作",
+     "en": "Shortcuts",
+     "items": [
+      {
+       "id": "h2a",
+       "n": "灯光 / 喇叭快捷",
+       "en": "Light & horn quick actions",
+       "d": "前爆闪 / 后爆闪 / 脉冲喇叭 / 领航模式",
+       "t": "grid",
+       "o": [
+        {
+         "v": "91",
+         "l": "前爆闪",
+         "s": "0x5B"
+        },
+        {
+         "v": "94",
+         "l": "后爆闪",
+         "s": "0x5E"
+        },
+        {
+         "v": "90",
+         "l": "脉冲喇叭",
+         "s": "0x5A"
+        },
+        {
+         "v": "95",
+         "l": "领航模式",
+         "s": "0x5F"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "首页 quickActions 映射表 {frontStrobe:91, rearStrobe:94, pulseHorn:90, rearFog:95}，点击 runQuickCommand 发 CMD 0xBB (187) + [value] 并切换 active 态。配置块里还有对应的速度档：pluseHighBeam byte25>>0&3、pluseHorn byte27>>6&3 等。注意灯光爆闪在公共道路属于滥用灯光与非法改装，仅封闭场地。",
+       "src": "pages/index/index.js:660 / SETTINGS 表",
+       "api": "POST /api/feifan/action {quick}"
+      },
+      {
+       "id": "h2b",
+       "n": "电池预热",
+       "en": "Battery preheat",
+       "d": "开启 / 关闭（带确认弹窗）",
+       "t": "seg",
+       "o": [
+        {
+         "v": "29",
+         "l": "开启",
+         "s": "0x1D"
+        },
+        {
+         "v": "28",
+         "l": "关闭",
+         "s": "0x1C"
+        }
+       ],
+       "lv": "A",
+       "p4": "需新增",
+       "im": "CMD 0xBB + [29] 开启 / [28] 关闭；开启前 wx.showModal 二次确认。",
+       "src": "pages/index/index.js:11941 toggleBatteryHeat",
+       "api": "POST /api/feifan/action"
+      },
+      {
+       "id": "h2c",
+       "n": "模块开关",
+       "en": "Module switch",
+       "d": "一键启停模块全部注入",
+       "t": "seg",
+       "o": [
+        {
+         "v": "251",
+         "l": "停用",
+         "s": "0xFB"
+        },
+        {
+         "v": "252",
+         "l": "启用",
+         "s": "0xFC"
+        }
+       ],
+       "lv": "A",
+       "p4": "已有",
+       "im": "CMD 0xBB + [251 | 252]；配置块里还有模块总开关 mianSwitch byte28>>3&1。P4 已有 LAB 总闸 / runtime gate，建议把它做成页面顶部的「总闸」而不是普通开关。",
+       "src": "pages/index/index.js runModuleSwitch / SETTINGS 表",
+       "api": "映射到现有总闸端点"
+      }
+     ]
+    },
+    {
+     "id": "h3",
+     "name": "常用与配置块",
+     "en": "Common & blobs",
+     "items": [
+      {
+       "id": "h3a",
+       "n": "功能入口",
+       "en": "Feature entries",
+       "d": "车辆控制 / 辅助驾驶 / 模块设置 / 快捷指令 / 高级功能",
+       "t": "info",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "首页 features3 / features2 只是小程序路由表，对应本页的四个分组。P4 侧用底部导航或页面内锚点即可。",
+       "src": "pages/index/index.js",
+       "api": "（前端路由）"
+      },
+      {
+       "id": "h3b",
+       "n": "快捷指令",
+       "en": "Shortcut commands",
+       "d": "绑定按键和功能；256 字节配置块同步",
+       "t": "info",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "CMD 0xAB (171) 读写快捷指令配置块，页面提示「未收到 256 字节配置回包」；scene / gaugeMenu 页也走 171。蓝牙按钮配置是 CMD 0xBA (186) 回包。P4 要做可复用一个通用的 256B blob 存取端点。",
+       "src": "pages/shortcut/shortcut.js / pages/scene/scene.js / pages/bleBtn/bleBtn.js",
+       "api": "GET/POST /api/feifan/blob?name=shortcut"
+      },
+      {
+       "id": "h3c",
+       "n": "蓝牙按钮",
+       "en": "BLE buttons",
+       "d": "外部蓝牙按键搜索、配对、绑定动作",
+       "t": "info",
+       "lv": "A",
+       "p4": "已有",
+       "im": "CMD 0xF0 (240) 主机配对 / 0xBA (186) 配置同步。P4 已内置 s3xy_ble.h（最多 3 个 S3XY 按钮、绑定与动作映射），可直接映射。",
+       "src": "pages/bleHost/bleHost.js / P4can s3xy_ble.h",
+       "api": "映射现有 S3XY 端点"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "set",
+   "name": "模块设置",
+   "en": "Module settings",
+   "note": "外观、模块维护与参数备份",
+   "sections": [
+    {
+     "id": "s1",
+     "name": "通用设置",
+     "en": "General",
+     "items": [
+      {
+       "id": "s1a",
+       "n": "深色模式",
+       "en": "Dark mode",
+       "d": "全局霓虹深色主题",
+       "t": "sw",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "小程序本地 settings + resolveThemeClass，只改 CSS class。P4 的 dashboard 已有 p4canDashboardTheme（system/light/dark），直接复用现有主题开关，不要重复做。",
+       "src": "pages/set/set.js / dashboard_source.html:12-27",
+       "api": "（复用现有主题设置）"
+      },
+      {
+       "id": "s1b",
+       "n": "跟随系统",
+       "en": "Follow system",
+       "d": "随手机深色 / 浅色自动切换",
+       "t": "sw",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "同上，matchMedia('(prefers-color-scheme: dark)')。",
+       "src": "dashboard_source.html:13",
+       "api": "（复用现有主题设置）"
+      },
+      {
+       "id": "s1c",
+       "n": "自动深色",
+       "en": "Scheduled dark",
+       "d": "18:00 - 06:00 自动切换",
+       "t": "sw",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "截图新增项，本包只有跟随系统；按时间段切换属前端定时器，P4 若做需本地时钟（NTP/浏览器时间）。",
+       "src": "截图 7",
+       "api": "（前端本地）"
+      },
+      {
+       "id": "s1d",
+       "n": "字体大小",
+       "en": "Font size",
+       "d": "全局界面缩放（截图值 20）",
+       "t": "num",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "本地 settings.fontSize，各页 syncFontSize 读取后改根节点字号。P4 中文语言版可把「语言选择 + 字号」放在同一张外观卡里。",
+       "src": "pages/set/set.js / apHelper.js syncFontSize",
+       "api": "（前端本地）"
+      }
+     ]
+    },
+    {
+     "id": "s2",
+     "name": "功能模块",
+     "en": "Modules",
+     "items": [
+      {
+       "id": "s2a",
+       "n": "显示与仪表",
+       "en": "Display & gauge",
+       "d": "显示与仪表盘的设置",
+       "t": "info",
+       "lv": "C",
+       "p4": "本地UI",
+       "im": "路由到 gaugeMenu 页；该页大量设置走 CMD 0xAB 171 配置块（仪表外观、布局、背景、自定义文案）。",
+       "src": "pages/set/set.js / pages/gaugeMenu/gaugeMenu.js",
+       "api": "GET/POST /api/feifan/blob?name=gauge"
+      },
+      {
+       "id": "s2b",
+       "n": "备份恢复",
+       "en": "Backup & restore",
+       "d": "数据备份与恢复",
+       "t": "info",
+       "lv": "B",
+       "p4": "需新增",
+       "im": "pages/backup/backup.js 有「上次操作已中断 / 未备份 / 已备份」状态，导出导入的是配置块与本地设置的打包。P4 可做成 /api/feifan/backup 的 JSON 导出导入。",
+       "src": "pages/backup/backup.js / pages/my/my.js",
+       "api": "GET/POST /api/feifan/backup（建议新增）"
+      },
+      {
+       "id": "s2c",
+       "n": "维护模式",
+       "en": "Service mode",
+       "d": "车辆进入维护模式（需安全静止）",
+       "t": "info",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "CMD 0xA7 (167) + [255]，发送前 wx.showModal 警告「车辆必须处于安全静止状态」。高级功能页也用同一个 255。",
+       "src": "pages/set/set.js:3356 / pages/advanced/advanced.js:7121",
+       "api": "POST /api/feifan/action {code:255}"
+      },
+      {
+       "id": "s2d",
+       "n": "参数配置",
+       "en": "Parameter config",
+       "d": "模块后台操作（完整位域表）",
+       "t": "info",
+       "lv": "A",
+       "p4": "需新增",
+       "im": "所有位域设置最终都走 writeConfigBytes -> CMD 0xA3 (163) 整块回写；读由 CMD 0xA0/0xA1/0xA3 回包同步到 globalData.configBytes（≥35 字节）。下方「集成清单」有 32 个已确证字段。",
+       "src": "app-service.main.js:239841 / SETTINGS 表",
+       "api": "GET/POST /api/feifan/config"
+      },
+      {
+       "id": "s2e",
+       "n": "恢复默认",
+       "en": "Factory reset",
+       "d": "模块恢复出厂设置",
+       "t": "info",
+       "lv": "A",
+       "p4": "已有",
+       "im": "CMD 0xA4 (164)，payload = getUid(deviceInfo)（UID 字节）。P4 已有多级重置（Firmware Settings / Bluetooth Data / Factory Reset），注意对齐语义。",
+       "src": "pages/set/set.js:3881 / P4can 现有 reset 端点",
+       "api": "映射现有 reset 端点"
+      }
+     ]
+    },
+    {
+     "id": "s3",
+     "name": "高级功能",
+     "en": "Advanced",
+     "items": [
+      {
+       "id": "s3a",
+       "n": "实验动作",
+       "en": "Lab actions",
+       "d": "漂移模式 / 关闭前电机 / 关闭后电机 / 重启模块",
+       "t": "grid",
+       "o": [
+        {
+         "v": "drift",
+         "l": "漂移模式"
+        },
+        {
+         "v": "frontOff",
+         "l": "关闭前电机"
+        },
+        {
+         "v": "rearOff",
+         "l": "关闭后电机"
+        },
+        {
+         "v": "reboot",
+         "l": "重启模块"
+        }
+       ],
+       "lv": "B",
+       "p4": "不可达",
+       "im": "pages/advanced/advanced.js 的实验动作走 CMD 0xA5 (165) 自定义 payload 与 CMD 0xA7 (167)；涉及动力/驱动单元，风险最高，本页只保留菜单不接后端。",
+       "src": "pages/advanced/advanced.js:4651 / :5200 / :6660",
+       "api": "（不接入）"
+      },
+      {
+       "id": "s3b",
+       "n": "模块总开关",
+       "en": "Master switch",
+       "d": "一键启停模块全部功能",
+       "t": "sw",
+       "lv": "A",
+       "p4": "已有",
+       "im": "配置块 mianSwitch：byte28 >>> 3 & 1；与首页 CMD 0xBB 251/252 是两条路径。P4 建议统一到一个总闸，避免两套状态打架。",
+       "src": "SETTINGS 表 / pages/index/index.js",
+       "api": "映射到现有总闸端点"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dev",
+   "name": "集成清单",
+   "en": "Integration notes",
+   "note": "命令表、位域、端点与刷写步骤",
+   "sections": []
+  }
+ ],
+ "fields_full": [
+  {
+   "id": "mianSwitch",
+   "group": "快捷功能设置",
+   "section": "模块状态",
+   "name": "模块总开关",
+   "bit": [
+    28,
+    3,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "apAutoOpenType",
+   "group": "AP辅助参数设置",
+   "section": "AP恢复",
+   "name": "AP恢复",
+   "bit": [
+    28,
+    1,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "双击右滚轮"
+    ],
+    [
+     2,
+     "下拉档杆到底"
+    ],
+    [
+     3,
+     "跟随AP"
+    ]
+   ]
+  },
+  {
+   "id": "apAutoOpenTime",
+   "group": "AP辅助参数设置",
+   "section": "AP恢复",
+   "name": "AP恢复延时",
+   "bit": [
+    30,
+    1,
+    7
+   ],
+   "options": [
+    [
+     0,
+     "立即恢复AP(默认)"
+    ],
+    [
+     1,
+     "延时1秒后恢复AP"
+    ],
+    [
+     2,
+     "延时2秒后恢复AP"
+    ],
+    [
+     3,
+     "延时3秒后恢复AP"
+    ],
+    [
+     4,
+     "延时4秒后恢复AP"
+    ],
+    [
+     5,
+     "延时5秒后恢复AP"
+    ],
+    [
+     6,
+     "延时6秒后恢复AP"
+    ],
+    [
+     7,
+     "延时7秒后恢复AP"
+    ]
+   ]
+  },
+  {
+   "id": "oneClickOpenAP",
+   "group": "AP辅助参数设置",
+   "section": "AP恢复",
+   "name": "一键AP",
+   "bit": [
+    31,
+    3,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "fsd",
+   "group": "AP辅助参数设置",
+   "section": "AP恢复",
+   "name": "EAP辅助",
+   "bit": [
+    28,
+    5,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "OffAPAutoWiper",
+   "group": "AP辅助参数设置",
+   "section": "AP免打扰",
+   "name": "关闭自动雨刮",
+   "bit": [
+    25,
+    7,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "dynamicBrakeLight",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "动态刹车灯",
+   "bit": [
+    33,
+    6,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "轻踩刹车"
+    ],
+    [
+     2,
+     "深踩刹车"
+    ]
+   ]
+  },
+  {
+   "id": "airAutoArid",
+   "group": "快捷功能设置",
+   "section": "座舱便利",
+   "name": "空调烘干",
+   "bit": [
+    33,
+    4,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "烘干1分钟"
+    ],
+    [
+     2,
+     "烘干5分钟"
+    ],
+    [
+     3,
+     "烘干10分钟"
+    ]
+   ]
+  },
+  {
+   "id": "apHighBeam",
+   "group": "AP辅助参数设置",
+   "section": "AP免打扰",
+   "name": "手动远光",
+   "bit": [
+    31,
+    4,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "老-AP手动远光"
+    ],
+    [
+     2,
+     "新-随心远光"
+    ]
+   ]
+  },
+  {
+   "id": "blinkHighBeam",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "远光闪3次",
+   "bit": [
+    30,
+    6,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "pluseHighBeam",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "远光爆闪速度",
+   "bit": [
+    25,
+    0,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "快"
+    ],
+    [
+     2,
+     "中"
+    ],
+    [
+     3,
+     "慢"
+    ]
+   ]
+  },
+  {
+   "id": "pluseHighBeamAndLowBeam",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "近光跟随远光爆闪",
+   "bit": [
+    25,
+    2,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "pluseFrontFogLight",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "前雾灯爆闪",
+   "bit": [
+    30,
+    5,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "pluseRearFogLight",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "后雾灯爆闪",
+   "bit": [
+    31,
+    6,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "gentryHorn",
+   "group": "快捷功能设置",
+   "section": "鸣笛联动",
+   "name": "低速轻鸣笛",
+   "bit": [
+    34,
+    4,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "车速低于10时"
+    ],
+    [
+     2,
+     "车速低于20时"
+    ],
+    [
+     3,
+     "车速低于30时"
+    ]
+   ]
+  },
+  {
+   "id": "gentryHornCount",
+   "group": "快捷功能设置",
+   "section": "鸣笛联动",
+   "name": "轻鸣笛次数",
+   "bit": [
+    34,
+    6,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "轻鸣笛1次"
+    ],
+    [
+     1,
+     "轻鸣笛2次"
+    ],
+    [
+     2,
+     "轻鸣笛3次"
+    ],
+    [
+     3,
+     "轻鸣笛4次"
+    ]
+   ]
+  },
+  {
+   "id": "pluseHorn",
+   "group": "快捷功能设置",
+   "section": "鸣笛联动",
+   "name": "脉冲喇叭速度",
+   "bit": [
+    27,
+    6,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "快"
+    ],
+    [
+     2,
+     "中"
+    ],
+    [
+     3,
+     "慢"
+    ]
+   ]
+  },
+  {
+   "id": "longPluseHorn",
+   "group": "快捷功能设置",
+   "section": "鸣笛联动",
+   "name": "长按喇叭开启脉冲喇叭",
+   "bit": [
+    27,
+    5,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "hornLinkedHighBeam",
+   "group": "快捷功能设置",
+   "section": "鸣笛联动",
+   "name": "喇叭联动远光",
+   "bit": [
+    32,
+    5,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "highBeamLinkedHorn",
+   "group": "快捷功能设置",
+   "section": "鸣笛联动",
+   "name": "远光联动喇叭",
+   "bit": [
+    32,
+    6,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "openDoorHazardLight",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "开门双闪灯",
+   "bit": [
+    30,
+    4,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "backHazardLight",
+   "group": "快捷功能设置",
+   "section": "灯光提醒",
+   "name": "倒车双闪灯",
+   "bit": [
+    30,
+    7,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "KERS",
+   "group": "快捷功能设置",
+   "section": "驾驶偏好",
+   "name": "能量回收制动",
+   "bit": [
+    24,
+    5,
+    7
+   ],
+   "options": [
+    [
+     0,
+     "车机设置(默认)"
+    ],
+    [
+     1,
+     "0%"
+    ],
+    [
+     2,
+     "25%"
+    ],
+    [
+     3,
+     "50%"
+    ],
+    [
+     4,
+     "75%"
+    ],
+    [
+     5,
+     "100%"
+    ]
+   ]
+  },
+  {
+   "id": "stoppingMode",
+   "group": "快捷功能设置",
+   "section": "驾驶偏好",
+   "name": "停止模式设置",
+   "bit": [
+    25,
+    5,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "车机设置(默认)"
+    ],
+    [
+     1,
+     "保持"
+    ],
+    [
+     2,
+     "缓行"
+    ],
+    [
+     3,
+     "转动"
+    ]
+   ]
+  },
+  {
+   "id": "autoSportMode",
+   "group": "快捷功能设置",
+   "section": "驾驶偏好",
+   "name": "自动运动模式",
+   "bit": [
+    24,
+    0,
+    7
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "电门>=20%时"
+    ],
+    [
+     2,
+     "电门>=30%时"
+    ],
+    [
+     3,
+     "电门>=40%时"
+    ],
+    [
+     4,
+     "电门>=50%时"
+    ],
+    [
+     5,
+     "电门>=60%时"
+    ],
+    [
+     6,
+     "电门>=70%时"
+    ],
+    [
+     7,
+     "电门>=80%时"
+    ]
+   ]
+  },
+  {
+   "id": "autoParkBrake",
+   "group": "快捷功能设置",
+   "section": "驾驶偏好",
+   "name": "自动强驻车",
+   "bit": [
+    24,
+    4,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "frontRightEasyAccess",
+   "group": "快捷功能设置",
+   "section": "座舱便利",
+   "name": "副驾便利进出",
+   "bit": [
+    25,
+    3,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "副驾安全带解系时"
+    ],
+    [
+     2,
+     "副驾车门开关时"
+    ]
+   ]
+  },
+  {
+   "id": "TimeOpenFrontBox",
+   "group": "快捷功能设置",
+   "section": "门盖联动",
+   "name": "门把手开关前备箱",
+   "bit": [
+    29,
+    2,
+    7
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "长拉1秒"
+    ],
+    [
+     2,
+     "长拉2秒"
+    ],
+    [
+     3,
+     "长拉3秒"
+    ],
+    [
+     4,
+     "长拉4秒"
+    ],
+    [
+     5,
+     "长拉5秒"
+    ],
+    [
+     6,
+     "长拉6秒"
+    ],
+    [
+     7,
+     "长拉7秒"
+    ]
+   ]
+  },
+  {
+   "id": "TimeOpenChargeDoor",
+   "group": "快捷功能设置",
+   "section": "门盖联动",
+   "name": "门把手开关充电口",
+   "bit": [
+    29,
+    5,
+    7
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "长拉1秒"
+    ],
+    [
+     2,
+     "长拉2秒"
+    ],
+    [
+     3,
+     "长拉3秒"
+    ],
+    [
+     4,
+     "长拉4秒"
+    ],
+    [
+     5,
+     "长拉5秒"
+    ],
+    [
+     6,
+     "长拉6秒"
+    ],
+    [
+     7,
+     "长拉7秒"
+    ]
+   ]
+  },
+  {
+   "id": "automdr",
+   "group": "AP辅助参数设置",
+   "section": "AP免打扰",
+   "name": "AP自动免打扰",
+   "bit": [
+    28,
+    4,
+    1
+   ],
+   "options": [
+    [
+     0,
+     "关闭(默认)"
+    ],
+    [
+     1,
+     "跟随AP"
+    ]
+   ]
+  },
+  {
+   "id": "apOverspeedExit",
+   "group": "AP辅助参数设置",
+   "section": "AP恢复",
+   "name": "AP超速退出",
+   "bit": [
+    34,
+    0,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "ModeMDR",
+   "group": "AP辅助参数设置",
+   "section": "AP免打扰",
+   "name": "AP免打扰方式",
+   "bit": [
+    29,
+    0,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "滚轮免打扰(默认)"
+    ],
+    [
+     1,
+     "无感免打扰"
+    ],
+    [
+     2,
+     "滚轮+无感"
+    ]
+   ]
+  },
+  {
+   "id": "beep",
+   "group": "快捷功能设置",
+   "section": "模块状态",
+   "name": "提示音音量",
+   "bit": [
+    26,
+    0,
+    255
+   ],
+   "options": [
+    [
+     0,
+     "0%"
+    ],
+    [
+     1,
+     "5%"
+    ],
+    [
+     2,
+     "10%"
+    ],
+    [
+     3,
+     "15%"
+    ],
+    [
+     4,
+     "20%"
+    ],
+    [
+     5,
+     "25%"
+    ],
+    [
+     6,
+     "30%"
+    ],
+    [
+     7,
+     "35%"
+    ],
+    [
+     8,
+     "40%"
+    ],
+    [
+     9,
+     "45%"
+    ],
+    [
+     10,
+     "50%"
+    ],
+    [
+     20,
+     "55%"
+    ],
+    [
+     30,
+     "60%"
+    ],
+    [
+     50,
+     "65%"
+    ],
+    [
+     70,
+     "70%"
+    ],
+    [
+     90,
+     "75%"
+    ],
+    [
+     110,
+     "80%"
+    ],
+    [
+     130,
+     "85%"
+    ],
+    [
+     150,
+     "90%"
+    ],
+    [
+     170,
+     "95%"
+    ],
+    [
+     255,
+     "100%(默认)"
+    ]
+   ]
+  },
+  {
+   "id": "led",
+   "group": "快捷功能设置",
+   "section": "模块状态",
+   "name": "LED灯开关",
+   "bit": [
+    27,
+    4,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "time",
+   "group": "AP辅助参数设置",
+   "section": "滚轮策略",
+   "name": "滚轮操作时间",
+   "bit": [
+    27,
+    0,
+    15
+   ],
+   "options": [
+    [
+     1,
+     "每2-3秒随机(默认)"
+    ],
+    [
+     2,
+     "每3-5秒随机"
+    ],
+    [
+     3,
+     "每5-10秒随机"
+    ],
+    [
+     4,
+     "每10-15秒随机"
+    ],
+    [
+     5,
+     "每15-20秒随机"
+    ],
+    [
+     6,
+     "每20-25秒随机"
+    ],
+    [
+     7,
+     "每25-30秒随机"
+    ],
+    [
+     8,
+     "每30-35秒随机"
+    ],
+    [
+     15,
+     "定点免打扰"
+    ]
+   ]
+  },
+  {
+   "id": "rand",
+   "group": "AP辅助参数设置",
+   "section": "滚轮策略",
+   "name": "滚轮随机时间",
+   "bit": [
+    28,
+    0,
+    1
+   ],
+   "options": [
+    [
+     0,
+     "关闭"
+    ],
+    [
+     1,
+     "开启(默认)"
+    ]
+   ]
+  },
+  {
+   "id": "lr",
+   "group": "AP辅助参数设置",
+   "section": "滚轮策略",
+   "name": "模块自动操作",
+   "bit": [
+    28,
+    6,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "左滚轮(默认)"
+    ],
+    [
+     1,
+     "右滚轮"
+    ],
+    [
+     2,
+     "左右滚轮交替"
+    ],
+    [
+     3,
+     "左右滚轮随机"
+    ]
+   ]
+  },
+  {
+   "id": "jg",
+   "group": "AP辅助参数设置",
+   "section": "加减策略",
+   "name": "加减时间间隔",
+   "bit": [
+    32,
+    0,
+    15
+   ],
+   "options": [
+    [
+     1,
+     "0.1秒(默认)"
+    ],
+    [
+     2,
+     "0.2秒"
+    ],
+    [
+     3,
+     "0.3秒"
+    ],
+    [
+     4,
+     "0.4秒"
+    ],
+    [
+     5,
+     "0.5秒"
+    ],
+    [
+     6,
+     "0.6秒"
+    ],
+    [
+     7,
+     "0.7秒"
+    ],
+    [
+     8,
+     "0.8秒"
+    ],
+    [
+     9,
+     "0.9秒"
+    ],
+    [
+     10,
+     "1.0秒"
+    ]
+   ]
+  },
+  {
+   "id": "jj",
+   "group": "AP辅助参数设置",
+   "section": "加减策略",
+   "name": "自动加减类型",
+   "bit": [
+    33,
+    0,
+    3
+   ],
+   "options": [
+    [
+     0,
+     "先加后减"
+    ],
+    [
+     1,
+     "先减后加(默认)"
+    ],
+    [
+     2,
+     "加减交替"
+    ],
+    [
+     3,
+     "加减随机"
+    ]
+   ]
+  },
+  {
+   "id": "frontLeftBuckle",
+   "group": "快捷功能设置",
+   "section": "安全带提醒",
+   "name": "主驾安全带提醒",
+   "bit": [
+    34,
+    1,
+    1
+   ],
+   "options": [
+    [
+     0,
+     "开启(默认)"
+    ],
+    [
+     1,
+     "关闭提醒"
+    ]
+   ]
+  },
+  {
+   "id": "frontRightBuckle",
+   "group": "快捷功能设置",
+   "section": "安全带提醒",
+   "name": "副驾安全带提醒",
+   "bit": [
+    34,
+    2,
+    1
+   ],
+   "options": [
+    [
+     0,
+     "开启(默认)"
+    ],
+    [
+     1,
+     "关闭提醒"
+    ]
+   ]
+  },
+  {
+   "id": "rearBuckle",
+   "group": "快捷功能设置",
+   "section": "安全带提醒",
+   "name": "后排安全带提醒",
+   "bit": [
+    34,
+    3,
+    1
+   ],
+   "options": [
+    [
+     0,
+     "开启(默认)"
+    ],
+    [
+     1,
+     "关闭提醒"
+    ]
+   ]
+  },
+  {
+   "id": "backHazardRearFogLight",
+   "group": "快捷功能设置",
+   "section": "灯光实验",
+   "name": "倒车后雾灯照明",
+   "bit": [
+    24,
+    3,
+    1
+   ],
+   "options": []
+  },
+  {
+   "id": "steerAssistanceLighting",
+   "group": "快捷功能设置",
+   "section": "灯光实验",
+   "name": "转向辅助照明",
+   "bit": [
+    31,
+    7,
+    1
+   ],
+   "options": []
+  }
+ ]
+}
