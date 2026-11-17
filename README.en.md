@@ -1,5 +1,61 @@
 # P4can-unlock-more
 
+## Disclaimer
+
+> **⚠️ Read this section before flashing anything.** Continuing to use this project means you have read, understood and fully accepted every clause below. **If you disagree with any part of it, stop now and delete all files from this repository.**
+
+### 1. Not affiliated, not official
+
+This is a **personal research and learning** project. It is **not affiliated with, authorised by, endorsed by or supported by Tesla, Inc.** or any of its subsidiaries. Vehicle names, trademarks and protocol names appear only to describe compatibility; all rights remain with their respective owners.
+
+### 2. No guarantee that any feature works — you must test it yourself
+
+**This is the most important clause: nothing in this repository is guaranteed to work on your car.**
+
+- Of the 141 entries on the *More features* page, only those graded `A` were read out of the decompiled firmware as real bit offsets, masks and command bytes — and even those were verified **only on the author's own bench and car**. Entries graded `B` come from third-party UI mock-ups, **no matching frame was ever found in the firmware, and they very likely do nothing**. Entries graded `C` are pure front-end behaviour with no bus access.
+- The five `/api/feifan/*` handlers in `web_api.h` are **not implemented**. With this build, switches remember their state but **nothing is sent to the CAN bus**.
+- CAN matrices and settings-block layouts differ between model years, markets and software versions. A bit-field that works on someone else's car may do nothing on yours — or may trigger behaviour you did not intend.
+- **You must verify every single feature yourself, one by one, in a safe environment.** Never assume the car did something because a switch looks on and the UI says "enabled". UI state is not vehicle state.
+
+### 3. Safety risk is yours
+
+This project reads and writes the vehicle CAN bus and can affect indicators, high beams, the horn, doors, the frunk/trunk, parking and driver-assist logic. **Any misuse can cause vehicle damage, a crash, injury or death.**
+
+- Do **not** test on public roads, motorways, with passengers, with cargo, or with any third party present.
+- Test only in a **closed area, offline, with nobody around**, by someone with the relevant knowledge and qualifications.
+- While programming, flashing or debugging: **do not park on a slope, do not leave anyone in the car, do not leave the charge connector plugged in.**
+- If you are unsure what an action does, **do not press it**.
+
+### 4. Legal compliance
+
+In many jurisdictions, including China, **modifying lighting, horn or brake-light behaviour, or suppressing driver-monitoring alerts, is illegal**. It may cause the vehicle to fail inspection, attract penalties, or invalidate insurance. You are responsible for confirming that your use is lawful where you live, and you bear full legal responsibility.
+
+This project is **not intended for circumventing regulation, spoofing vehicle state, fraud, or commercial/ride-hailing use**. Do not use it for those purposes.
+
+### 5. Bricking, data loss and other property damage
+
+Flashing firmware carries a risk of **permanent device damage (bricking)**. Images here target **32 MB flash** (`app5M_fat24M_32MB`); on a **16 MB board the bootloader will not even start**. OTA updates only write the app partition and cannot change the bootloader, partition table or flash parameters — **some mistakes cannot be recovered over the air** and require USB reflashing.
+
+The author accepts **no responsibility** for: bricked devices, lost flash data, vehicle electronic faults, ECU error codes, voided warranty, dealer or third-party repair costs, reduced resale value, lost time, or any indirect or consequential loss.
+
+### 6. No warranty
+
+This project is provided **"AS IS"**, **without warranty of any kind, express or implied**, including but not limited to merchantability, fitness for a particular purpose, non-infringement, freedom from defects, uninterrupted operation, or that the code matches the documentation. Words such as "works", "verified" or "confirmed" in docs, comments, commits or release notes describe only what the author observed in his own environment and **are not a promise about yours**.
+
+### 7. Limitation of liability
+
+To the maximum extent permitted by law, **the author, contributors and distributors are not liable** for any direct, indirect, incidental, special, punitive or consequential damages arising from the use of, or inability to use, this project, whether based in contract, tort, strict liability or otherwise, even if advised of the possibility of such damages. **You use this project entirely at your own risk.**
+
+### 8. Miscellaneous
+
+- This project is MIT licensed. The warranty disclaimer in that licence applies together with this notice; where they conflict, the clause more favourable to the author prevails.
+- The author is **under no obligation** to provide support, fix defects, answer issues or ship updates.
+- The author may **modify, suspend or delete** this repository and any release at any time, without notice.
+- If you are not the vehicle owner (borrowing, renting, valeting, servicing), **do not flash it**; obtain the owner's explicit written consent first.
+- If any part of this notice conflicts with mandatory local law, local law prevails and the remaining clauses stay in effect.
+
+---
+
 > [!WARNING]
 > **32 MB flash only** (Waveshare ESP32-P4-WIFI6 / rev3.2).
 > The `app5M_fat24M_32MB` partition table does not fit a 16 MB board — flashing
@@ -17,11 +73,17 @@ actually works end to end.
 
 ## Status — read this first
 
+> **No guarantee that any feature works.** Some of the 141 entries are inferred
+> from mock-ups, the back-end endpoints are not written yet, and other model
+> years may not recognise the same bits. **Test every item yourself in a closed
+> area** — never treat the UI as proof. See the [disclaimer](#disclaimer) above.
+
 | | Status | Notes |
 |---|---|---|
-| More features page | ✅ works | 8 groups / 141 entries, bilingual, all controls self-tested |
+| More features page | ✅ front end works | 8 groups / 141 entries, bilingual, all controls clickable — **effect on your car unverified** |
 | Firmware update (OTA) | ✅ works | upload a `.bin` in the browser, A/B partitions, rollback on failure |
 | Local simulator | ✅ works | `sim/p4can-sim.html`, open it directly, no hardware |
+| Per-feature effect | ⚠️ **unknown** | `A` verified on the author's car, `B` inferred and may do nothing, `C` no bus access |
 | **`/api/feifan/*` endpoints** | ❌ **not implemented** | UI state is kept in `localStorage` only — nothing reaches CAN yet |
 
 The front end is fully integrated into the stock dashboard; the five
@@ -142,10 +204,14 @@ scheme. `ota_0` / `ota_1` are `0x480000` (4.5 MB) each; the per-image ceiling is
 
 ## Safety
 
-Built for **closed-course debugging**. Changing lighting, horn, nag suppression
-or driver-monitor behaviour on public roads may be illegal and may put the
-vehicle into a non-certified state. Use at your own risk; the authors accept no
-liability. Not affiliated with Tesla, Inc.
+Full terms are in the [disclaimer](#disclaimer) at the top; here are the three
+that matter day to day:
+
+- Closed course only. Do not use lighting, horn or speed-limit features on public roads.
+- Make sure you can unbrick the board (full image + USB) before you flash.
+- **Verify every feature yourself** — a switch reading "enabled" does not mean the car did it.
+
+Not affiliated with Tesla, Inc. Tesla, Model 3/Y and related marks belong to their owners.
 
 ## Support the project
 
