@@ -1,6 +1,6 @@
 # TSL BLE / 配置块协议
 
-> 本文件由 `tools/more/gen_docs.py` 从 `data/feifan-menu-data.json` 自动生成，请勿手改。
+> 本文件由 `data/feifan-menu-data.json` 生成。
 
 本文只涵盖实现 `更多功能` 页所需的帧与位域，不涉及鉴权细节以外的流程。
 

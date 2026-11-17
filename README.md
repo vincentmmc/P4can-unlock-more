@@ -87,7 +87,7 @@
 
 最后一条是关键：这一版把**前端**完整接进了官方看板，`web_api.h` 里那 5 个端点仍是 TODO。
 所以现在刷进去点开关，界面会记住状态，但车不会动。要真正生效见 [docs/PROTOCOL.md](docs/PROTOCOL.md)
-里给出的帧与位域定义，按它补端点即可 —— 数据、页、打包链路都已经就位。
+里给出的帧与位域定义，按它自己补端点即可 —— 帧、位域、命令字都已经整理成表。
 
 ---
 
@@ -130,13 +130,13 @@
 
 ## 刷机
 
-到 [Releases](../../releases) 下载，两种包，按需选：
+到 [Releases](https://github.com/baicyber/P4can-unlock-more/releases) 下载，两种包，按需选：
 
 ### 升级包 `*-ota.bin`（约 1.4 MB）—— 平时更新用
 
 1. 手机/电脑连上 P4 的热点
 2. 打开 `http://192.168.4.1` → **设置 → 固件更新**
-3. 选 `P4can-unlock-more-v3.29.3-more1117-ota.bin`
+3. 选 `P4can-unlock-more-v3.29.3-more1117r2-ota.bin`
 4. 点一下，再点一下确认，等进度条走完自动重启
 
 OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
@@ -144,7 +144,7 @@ OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
 ### 完整包 `*-full.bin`（32 MB）—— 首次烧录 / 救砖用
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-more1117-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-more1117r2-full.bin
 ```
 
 整片镜像布局（ESP32-P4 与 S3 不同，`0x0` 是空白 `0xFF`）：
@@ -160,47 +160,31 @@ FQBN 与页面指纹，刷完可以对照页面上的版本号核对。
 
 ---
 
-## 从源码编译
+## 源码
 
-需要 **Arduino-ESP32 core 3.3.12** 与 `arduino-cli`（或 Arduino IDE 2.x）。
+**本仓库不再提供源码**，只提供编译好的成品（升级包 / 完整包 / 文档 / 模拟页）。
+
+原因很简单：固件是基于上游 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock)
+改的，上游本身没有明确许可证；而我也没打算长期维护一份从别人固件里改出来的分支。
+与其放一份迟早过时的源码，不如只发能直接刷的成品。想要源码请直接看上游仓库。
+
+编译参数留在这里，方便你核对自己手里的包是不是同一套配置：
 
 ```text
 esp32:esp32:esp32p4:ChipVariant=postv3,FlashSize=32M,PartitionScheme=app5M_fat24M_32MB,PSRAM=enabled,USBMode=hwcdc,CDCOnBoot=cdc,FlashMode=qio
 ```
 
-`firmware/P4can-unlock-more/` 就是 sketch 目录，直接用 IDE 打开即可编译。
-
-### 一条命令出两个包
-
-```bash
-python tools/more/pack_ota.py            # 重建页面 → 编译 → 出包 → 校验
-python tools/more/pack_ota.py --no-html  # 页面没改，跳过 gzip 重建
-python tools/more/pack_ota.py --dry-run  # 只检查环境
-```
-
-脚本会做 7 步，任一步不合规直接中止：
-
-1. 重跑 `gen_feifan.py` → `integrate_feifan.py` → `patch_ota.py`，再 gzip 成 `index_html.h`
-2. 同步源码到 `build/` 编译副本，改写 `FW_VERSION` 打版本标
-3. `arduino-cli compile`
-4. 提取 `.ino.bin`，校验大小 ≤ `0x480000`、首字节 `0xE9`
-5. 提取 `.merged.bin`，校验 32 MB 与三个关键偏移
-6. **逐字节比对**镜像内嵌 gzip 与 `dashboard_source.html`（防止页面没同步进去）
-7. 写 `dist/manifest.json`
-
-`arduino-cli` 找不到时按 `ARDUINO_CLI` 环境变量 → `PATH` → `tools/` 顺序查找。
+arduino-cli 3.3.12 · 分区表 `app5M_fat24M_32MB` · 单分区上限 `0x480000`（4,718,592 B）。
 
 ---
 
 ## 本地预览（不刷板）
 
-```bash
-python tools/more/build_sim.py
-```
+直接双击 [`sim/p4can-sim.html`](sim/p4can-sim.html)，用浏览器打开即可。
 
-从 `index_html.h` 解出页面，注入假后端，输出 `sim/p4can-sim.html`。
-双击打开即可点完整流程：假 `/api/feifan/*`、假 OTA 进度、右下角 SIM 面板
-能看到每个请求的方法、路径、payload 与最近动作。
+这是从真实镜像里解出来的同一份页面，注入了一个假后端，可以点完整流程：
+假 `/api/feifan/*`、假 OTA 进度，右下角 SIM 面板能看到每个请求的方法、路径、
+payload 与最近动作。不需要板子，也不需要任何编译环境。
 
 > 这是调试页面用的，不能替代真机验证。
 
@@ -209,25 +193,18 @@ python tools/more/build_sim.py
 ## 目录结构
 
 ```text
-firmware/P4can-unlock-more/     固件 sketch（.ino + 头文件 + 页面）
-  dashboard_source.html         可编辑的看板源码（注入块标了 P4CAN-* 注释）
-  index_html.h                  由它 gzip 生成的嵌入头，不要手改
-  tools/                        上游自带的构建脚本
-tools/more/
-  build_more.py                 合并三路来源 → data/feifan-menu-data.json
-  gen_feifan.py                 生成页面/CSS/JS/翻译片段
-  integrate_feifan.py           5 处注入看板（幂等，先删旧块）
-  patch_ota.py                  固件更新面板增强（幂等）
-  pack_ota.py                   编译 + 出包 + 校验
-  build_sim.py                  生成本地模拟页
-data/feifan-menu-data.json      141 项功能 + 44 个位域 + 命令/API 定义
 docs/                           FEATURES / PROTOCOL / OTA / REVERSE
-sim/p4can-sim.html              本地模拟页（可直接打开）
+  img/more-home.png             页面截图
+  sponsor/                      赞助与联系二维码
+data/feifan-menu-data.json      141 项功能 + 44 个位域 + 命令/API 定义
+sim/p4can-sim.html              本地模拟页（双击即可打开）
 ```
+
+源码与构建工具不在本仓库内。
 
 ---
 
-### 详细文档
+## 详细文档
 
 | 文档 | 内容 |
 |---|---|

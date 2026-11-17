@@ -1,6 +1,6 @@
 # 功能清单 / Feature index
 
-> 本文件由 `tools/more/gen_docs.py` 从 `data/feifan-menu-data.json` 自动生成，请勿手改。
+> 本文件由 `data/feifan-menu-data.json` 生成。
 
 共 **141** 项，分为 **8** 组。证据等级：`A` 反编译实锤 · `B` 设计图推断 · `C` 本地 UI。
 

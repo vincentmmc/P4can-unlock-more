@@ -8,10 +8,6 @@ dist/
 # 模拟器中间产物（保留 p4can-sim.html 供直接打开）
 sim/p4can-embedded.html
 
-# 工具链本地副本（体积大，自行下载）
-tools/arduino-cli
-tools/arduino-cli.exe
-
 # 备份与缓存
 *.bak
 *.pre-*.bak

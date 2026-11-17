@@ -116,7 +116,7 @@ identifiers stay untranslated in Chinese mode.
 
 ## Flashing
 
-Grab a build from [Releases](../../releases).
+Grab a build from [Releases](https://github.com/baicyber/P4can-unlock-more/releases).
 
 **`*-ota.bin` (~1.4 MB)** — for routine updates: connect to the P4 hotspot,
 open `http://192.168.4.1` → Settings → Firmware update, pick the file, tap twice.
@@ -132,47 +132,47 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 ESP32-P4 layout differs from S3: `0x2000` bootloader (`E9`), `0x8000` partition
 table (`AA50`), `0x10000` app (`E9`); `0x0` is blank `0xFF`.
 
-## Build from source
+## Source code
 
-Arduino-ESP32 core **3.3.12**, `firmware/P4can-unlock-more/` is the sketch:
+**This repository no longer ships source code** — only the built artefacts
+(OTA image, full image, docs, simulator).
+
+The reason is simple: this firmware is a modified build of the upstream
+[P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock),
+which carries no explicit licence, and I have no intention of maintaining a
+long-lived fork of someone else's firmware. Rather than publish source that
+will go stale, I publish only images you can flash. For source, go upstream.
+
+The build configuration is kept here so you can check that a package matches it:
 
 ```text
 esp32:esp32:esp32p4:ChipVariant=postv3,FlashSize=32M,PartitionScheme=app5M_fat24M_32MB,PSRAM=enabled,USBMode=hwcdc,CDCOnBoot=cdc,FlashMode=qio
 ```
 
-```bash
-python tools/more/pack_ota.py            # rebuild page → compile → pack → verify
-python tools/more/pack_ota.py --no-html  # page unchanged
-python tools/more/pack_ota.py --dry-run  # environment check only
-```
-
-The script aborts instead of shipping a bad image: it rejects anything larger
-than `0x480000`, anything whose first byte is not `0xE9`, any `merged.bin` that
-is not 32 MB with valid magic at the three offsets, and any image whose embedded
-gzip page does not match `dashboard_source.html` byte for byte.
+arduino-cli 3.3.12 · `app5M_fat24M_32MB` · single-partition limit `0x480000` (4,718,592 B).
 
 ## Local preview
 
-```bash
-python tools/more/build_sim.py
-```
+Just open [`sim/p4can-sim.html`](sim/p4can-sim.html) in a browser.
 
-Extracts the page from `index_html.h`, injects a fake backend and writes
-`sim/p4can-sim.html`. Open it and click through the whole flow; the SIM panel
-shows every request with method, path and payload. Debugging aid only — not a
-substitute for hardware testing.
+It is the same page extracted from the real image, with a fake backend injected,
+so you can click through the whole flow: fake `/api/feifan/*`, fake OTA progress,
+and a SIM panel showing every request with method, path and payload. No hardware
+and no build toolchain needed. Debugging aid only — not a substitute for hardware testing.
 
 ## Layout
 
 ```text
-firmware/P4can-unlock-more/   sketch (.ino, headers, dashboard)
-tools/more/                   generators, injectors, packer, simulator builder
-data/feifan-menu-data.json    141 entries, 44 bit-fields, command/API tables
 docs/                         FEATURES / PROTOCOL / OTA / REVERSE
+  img/more-home.png           page screenshot
+  sponsor/                    sponsor and contact QR codes
+data/feifan-menu-data.json    141 entries, 44 bit-fields, command/API tables
 sim/p4can-sim.html            ready-to-open simulator
 ```
 
-### Documentation
+Source code and build tooling are not part of this repository.
+
+## Documentation
 
 | Doc | Contents |
 |---|---|
